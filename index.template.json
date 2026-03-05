@@ -1,0 +1,64 @@
+{
+  "name": "local-module-repository",
+  "description": "Lokales Vyra Module Repository für Offline-Entwicklung",
+  "version": "1.0.0",
+  "type": "file-based",
+  "base_url": "file:///local_repository",
+  "last_updated": "2025-11-03T20:11:58Z",
+  "modules": [
+    {
+      "name": "example_module",
+      "version": "0.1.0",
+      "hash": "000000000000000000000000000000000",
+      "description": "This template could be used to create a vyra module with basic functionality.",
+      "author": "Vyra Team",
+      "template": "basic",
+      "icon": "",
+      "dependencies": [],
+      "flags": {
+        "frontend_active": false,
+        "backend_active": false
+      },
+      "filename": "modules/example_module/0.1.0/example_module_0.1.0.tar.gz",
+      "synced_at": "2025-11-03T20:11:58Z",
+      "size": 0,
+      "checksum": ""
+    }
+  ],
+  "plugins": [
+    {
+      "name": "example-plugin",
+      "version": "0.1.0",
+      "type": "wasm-plugin",
+      "description": "Beispiel-Plugin Beschreibung.",
+      "priority": 50,
+      "status": "beta",
+      "compatibility": {
+        "vos_version": ">=2.1.0",
+        "modules": []
+      },
+      "load_strategy": "eager",
+      "permissions": {
+        "zenoh": [],
+        "filesystem": "none"
+      },
+      "entry_points": {
+        "backend": {
+          "filename": "plugin.wasm",
+          "runtime_args": []
+        },
+        "frontend": {
+          "filename": "dist/index.js",
+          "slot": "settings-card",
+          "css": []
+        }
+      },
+      "dependencies": [],
+      "filename": "plugins/example-plugin/0.1.0/example-plugin_0.1.0.tar.gz",
+      "hash": "",
+      "checksum": "",
+      "synced_at": "2025-11-03T20:11:58Z",
+      "size": 0
+    }
+  ]
+}

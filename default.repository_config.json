@@ -2,7 +2,7 @@
   "repositories": [
     {
       "name": "local-module-repository",
-      "url": "file:///local_module_repository",
+      "url": "file:///local_repository",
       "priority": 0,
       "enabled": true,
       "type": "file-based",

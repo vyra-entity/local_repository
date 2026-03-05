@@ -1,0 +1,105 @@
+{
+  "name": "local-repository",
+  "description": "Lokales Vyra Module Repository (Beispiel-Index)",
+  "version": "1.0.0",
+  "type": "file-based",
+  "base_url": "file:///local_repository",
+  "last_updated": "2026-03-05T00:00:00Z",
+  "modules": [
+    {
+      "name": "v2_dashboard",
+      "version": "0.1.0",
+      "hash": "aef036f639d3486a985b65ee25df8fec",
+      "description": "Dashboard-Modul für das VOS2-System. Bietet eine erweiterte Benutzeroberfläche mit Echtzeit-Insights, anpassbaren Widgets und nahtloser Integration.",
+      "author": "Vyra Team",
+      "template": "basic",
+      "icon": "",
+      "dependencies": [],
+      "flags": {
+        "frontend_active": true,
+        "backend_active": false
+      },
+      "filename": "modules/v2_dashboard/0.1.0/v2_dashboard_0.1.0.tar.gz",
+      "synced_at": "2026-03-05T00:00:00Z",
+      "size": 19914881,
+      "checksum": "2ba84282c5bca22258e95f0bceceb06ea16a0052501e8b58aa3c025d23e5eebc"
+    }
+  ],
+  "plugins": [
+    {
+      "id": "zenoh-log-exporter",
+      "name": "Zenoh Log Streamer",
+      "version": "1.0.2",
+      "author": "DevOps Tools Inc.",
+      "description": "Ermöglicht Live-Log-Streaming via Zenoh On-Demand.",
+      "priority": 80,
+      "status": "stable",
+      "load_strategy": "lazy",
+      "compatible_with": ["v2_dashboard", "gateway_node"],
+      
+      "permissions": {
+        "zenoh_scopes": ["myproject/logs/**"],
+        "network": false,
+        "storage": "read-only"
+      },
+
+      "entry_points": {
+        "backend": {
+          "type": "wasm",
+          "file": "plugins/zenoh-log-exporter/1.0.2/logic.wasm",
+          "handler": "init_stream",
+          "runtime_limits": {
+            "memory_mb": 64,
+            "cpu_shares": 0.2
+          }
+        },
+        "frontend": {
+          "type": "module",
+          "file": "plugins/zenoh-log-exporter/1.0.2/ui/index.js",
+          "css": ["plugins/zenoh-log-exporter/1.0.2/ui/style.css"],
+          "slots": [
+            {
+              "id": "sidebar-bottom",
+              "component": "LogStatusIcon",
+              "priority": 10
+            },
+            {
+              "id": "app_drawer_right",
+              "component": "LiveLogPanel",
+              "title": "Zenoh Live Logs"
+            }
+          ]
+        }
+      },
+
+      "help_data": {
+        "wiki_path": "plugins/zenoh-log-exporter/1.0.2/docs/readme.md",
+        "search_keywords": ["logs", "debug", "zenoh", "stream"]
+      },
+
+      "hash": "aef036f639d3486a985b65ee25df8fec",
+      "checksum": "eebc2ba84282c5bca22258e95f0bceceb0"
+    },
+    {
+      "id": "interactive-tour-guide",
+      "name": "Onboarding Helper",
+      "version": "2.0.0",
+      "author": "UX Master",
+      "description": "Das Hilfe-System als Plugin.",
+      "priority": 999,
+      "load_strategy": "eager",
+      "compatible_with": ["*"],
+      
+      "entry_points": {
+        "frontend": {
+          "type": "module",
+          "file": "plugins/help/2.0.0/tour_plugin.js",
+          "slots": [
+            { "id": "global_overlay", "component": "TourOverlay" },
+            { "id": "topbar_actions", "component": "HelpTriggerIcon" }
+          ]
+        }
+      }
+    }
+  ]
+}
