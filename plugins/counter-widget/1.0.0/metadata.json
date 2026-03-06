@@ -1,0 +1,61 @@
+{
+  "id": "counter-widget",
+  "name": "Counter Widget",
+  "version": "1.0.0",
+  "author": "VYRA Framework",
+  "description": "Einfaches Zähler-Widget für den v2_dashboard Homescreen. Zählt bei Button-Klick hoch, Logik läuft im v2_modulemanager.",
+  "priority": 50,
+  "status": "development",
+  "load_strategy": "eager",
+
+  "scope": {
+    "type": "MODULE",
+    "target": "v2_dashboard"
+  },
+
+  "compatible_with": ["v2_dashboard"],
+
+  "permissions": {
+    "zenoh_scopes": [],
+    "network": false,
+    "storage": "none"
+  },
+
+  "entry_points": {
+    "backend": {
+      "type": "wasm",
+      "file": "plugins/counter-widget/1.0.0/logic.wasm",
+      "handler": "init",
+      "runtime_limits": {
+        "memory_mb": 16,
+        "cpu_shares": 0.05
+      },
+      "exported_functions": ["init", "increment", "reset", "get_state"]
+    },
+    "frontend": {
+      "type": "module",
+      "file": "plugins/counter-widget/1.0.0/ui/index.js",
+      "css": ["plugins/counter-widget/1.0.0/ui/style.css"],
+      "slots": [
+        {
+          "id": "home-widget",
+          "component": "CounterWidget",
+          "title": "Counter Widget",
+          "priority": 10,
+          "min_width": 1,
+          "min_height": 1
+        }
+      ]
+    }
+  },
+
+  "config_schema": "plugins/counter-widget/1.0.0/schema.json",
+
+  "help_data": {
+    "wiki_path": "plugins/counter-widget/1.0.0/",
+    "search_keywords": ["counter", "widget", "demo", "example"]
+  },
+
+  "hash": "counter-widget-1.0.0",
+  "checksum": ""
+}

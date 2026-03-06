@@ -7,6 +7,10 @@
       "priority": 80,
       "status": "stable",
       "load_strategy": "lazy",
+      "scope": {
+        "type": "template", 
+        "target": "welding_cell"
+      },
       "compatible_with": ["v2_dashboard", "gateway_node"],
       
       "permissions": {

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-05T00:00:00Z",
+  "last_updated": "2026-03-06T00:00:00Z",
   "modules": [
     {
       "name": "v2_dashboard",
@@ -25,5 +25,22 @@
       "checksum": "2ba84282c5bca22258e95f0bceceb06ea16a0052501e8b58aa3c025d23e5eebc"
     }
   ],
-  "plugins": []
+  "plugins": [
+    {
+      "id": "counter-widget",
+      "name": "Counter Widget",
+      "version": "1.0.0",
+      "description": "Einfaches Zähler-Widget für den v2_dashboard Homescreen. Demo-Plugin für die Plugin-Architektur.",
+      "author": "VYRA Framework",
+      "scope": {
+        "type": "MODULE",
+        "target": "v2_dashboard"
+      },
+      "compatible_with": ["v2_dashboard"],
+      "status": "development",
+      "icon": "plugins/counter-widget/1.0.0/icon.svg",
+      "metadata": "plugins/counter-widget/1.0.0/metadata.json",
+      "synced_at": "2026-03-06T00:00:00Z"
+    }
+  ]
 }

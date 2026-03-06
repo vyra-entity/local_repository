@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Counter Widget Config",
+  "description": "Konfiguration für das Counter-Widget",
+  "type": "object",
+  "properties": {
+    "initial_value": {
+      "type": "integer",
+      "description": "Startwert des Zählers",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "step": {
+      "type": "integer",
+      "description": "Schrittweite pro Klick",
+      "default": 1,
+      "minimum": 1,
+      "maximum": 100
+    },
+    "label": {
+      "type": "string",
+      "description": "Angezeigter Titel im Widget",
+      "default": "Counter",
+      "maxLength": 32
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}
