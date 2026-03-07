@@ -51,6 +51,34 @@
 
   "config_schema": "plugins/counter-widget/1.0.0/schema.json",
 
+  "exports": [
+    {
+      "name": "init",
+      "args": [
+        {"name": "initial_value", "type": "i32"},
+        {"name": "step",          "type": "i32"}
+      ]
+    },
+    {
+      "name": "increment",
+      "args": [
+        {"name": "step", "type": "i32"}
+      ]
+    },
+    {
+      "name": "reset",
+      "args": []
+    },
+    {
+      "name": "get_count",
+      "args": []
+    },
+    {
+      "name": "get_step",
+      "args": []
+    }
+  ],
+
   "help_data": {
     "wiki_path": "plugins/counter-widget/1.0.0/",
     "search_keywords": ["counter", "widget", "demo", "example"]
