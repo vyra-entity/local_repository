@@ -16,7 +16,7 @@
   "compatible_with": ["v2_dashboard"],
 
   "permissions": {
-    "zenoh_scopes": [],
+    "interfaces": [],
     "network": false,
     "storage": "none"
   },
