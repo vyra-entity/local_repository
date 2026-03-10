@@ -1,0 +1,91 @@
+# Plugin Manifest — counter-widget v1.0.0
+# This file defines all metadata for a VYRA plugin.
+# See local_repository/plugins/README.md for the full schema documentation.
+
+# ── Identity ──────────────────────────────────────────────────────────────────
+id: counter-widget          # Unique plugin identifier (kebab-case, no spaces)
+name: Counter Widget        # Human-readable name shown in the UI
+version: 1.0.0              # Semantic version (MAJOR.MINOR.PATCH)
+author: VYRA Framework      # Author or organisation name
+description: >
+  Simple counter widget for the v2_dashboard home screen.
+  Counts up on button click; logic runs inside the v2_modulemanager
+  as a WASM module.
+priority: 50                # Loading priority (higher = loaded first); range 0–100
+status: development         # development | beta | stable | deprecated
+load_strategy: eager        # eager (load immediately) | lazy (load on first access)
+
+# ── Scope ─────────────────────────────────────────────────────────────────────
+# Defines where the plugin is available.
+scope:
+  type: MODULE              # GLOBAL | TEMPLATE | MODULE | INSTANCE
+  target: v2_dashboard      # Scope target identifier matching the scope type
+
+# Modules this plugin is compatible with (list of module name_ids)
+compatible_with:
+  - v2_dashboard
+
+# ── Permissions ───────────────────────────────────────────────────────────────
+permissions:
+  interfaces: []            # List of allowed VYRA transport interfaces (empty = none)
+  network: false            # Whether the plugin may make outbound network calls
+  storage: none             # none | read-only | read-write
+
+# ── Entry Points ──────────────────────────────────────────────────────────────
+entry_points:
+  backend:
+    type: wasm              # wasm | python (wasm is standard)
+    file: plugins/counter-widget/1.0.0/logic.wasm   # Path relative to NFS pool root
+    handler: init           # WASM function called on plugin initialisation
+    runtime_limits:
+      memory_mb: 16         # Max memory in MB the WASM sandbox may use
+      cpu_shares: 0.05      # Fractional CPU share (0.05 = 5 % of a core)
+    # Functions exported by the WASM module — drives the WasmRuntime dispatch.
+    # args order maps directly to WASM i32 parameters.
+    exports:
+      - name: init
+        args:
+          - name: initial_value
+            type: i32
+          - name: step
+            type: i32
+      - name: increment
+        args:
+          - name: step
+            type: i32
+      - name: reset
+        args: []
+      - name: get_count
+        args: []
+      - name: get_step
+        args: []
+
+  frontend:
+    type: module            # module (ES module / Vue SFC) | iframe | web-component
+    file: plugins/counter-widget/1.0.0/ui/index.js   # JS entry point (ES module)
+    css:
+      - plugins/counter-widget/1.0.0/ui/style.css
+    # Slots define where UI components are injected in the host module.
+    slots:
+      - id: home-widget     # Slot identifier defined by the host module (v2_dashboard)
+        component: CounterWidget  # Vue component name exported by the JS entry point
+        title: Counter Widget
+        priority: 10        # Slot-level priority (higher = rendered first)
+        min_width: 1        # Minimum grid columns (dashboard grid unit)
+        min_height: 1       # Minimum grid rows
+
+# Path to JSON Schema file for plugin config_overlay validation
+config_schema: plugins/counter-widget/1.0.0/schema.json
+
+# ── Documentation ─────────────────────────────────────────────────────────────
+docs:
+  wiki_path: plugins/counter-widget/1.0.0/
+  search_keywords:
+    - counter
+    - widget
+    - demo
+    - example
+
+# ── Integrity ─────────────────────────────────────────────────────────────────
+hash: counter-widget-1.0.0  # Composite identifier used for DB lookup
+checksum: ""                # SHA-256 checksum of the packaged plugin archive (set by build)

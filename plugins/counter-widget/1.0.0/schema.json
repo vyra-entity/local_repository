@@ -1,26 +1,26 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Counter Widget Config",
-  "description": "Konfiguration für das Counter-Widget",
+  "description": "Configuration schema for the Counter Widget plugin. Validated against config_overlay when installing or updating the plugin assignment.",
   "type": "object",
   "properties": {
     "initial_value": {
       "type": "integer",
-      "description": "Startwert des Zählers",
+      "description": "Initial counter value on plugin start.",
       "default": 0,
       "minimum": 0,
       "maximum": 1000000
     },
     "step": {
       "type": "integer",
-      "description": "Schrittweite pro Klick",
+      "description": "Increment step size per button click.",
       "default": 1,
       "minimum": 1,
       "maximum": 100
     },
     "label": {
       "type": "string",
-      "description": "Angezeigter Titel im Widget",
+      "description": "Display title shown inside the widget.",
       "default": "Counter",
       "maxLength": 32
     }
