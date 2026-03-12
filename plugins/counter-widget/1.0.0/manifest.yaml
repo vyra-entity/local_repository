@@ -73,6 +73,9 @@ entry_points:
         priority: 10        # Slot-level priority (higher = rendered first)
         min_width: 1        # Minimum grid columns (dashboard grid unit)
         min_height: 1       # Minimum grid rows
+        scope:              # Slot-level scope — restricts this slot to a specific target
+          type: MODULE      # GLOBAL | TEMPLATE | MODULE | INSTANCE
+          target: v2_dashboard
 
 # Path to JSON Schema file for plugin config_overlay validation
 config_schema: plugins/counter-widget/1.0.0/schema.json
