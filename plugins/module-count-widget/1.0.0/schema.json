@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Module Count Widget Config",
+  "description": "Configuration schema for the Module Count Widget plugin.",
+  "type": "object",
+  "properties": {
+    "refresh_interval_ms": {
+      "type": "integer",
+      "description": "Polling interval in milliseconds for refreshing the module count.",
+      "default": 5000,
+      "minimum": 1000,
+      "maximum": 60000
+    },
+    "label": {
+      "type": "string",
+      "description": "Display title shown inside the widget.",
+      "default": "Installed Modules",
+      "maxLength": 48
+    },
+    "show_instances": {
+      "type": "boolean",
+      "description": "If true, also display the total instance count below the module count.",
+      "default": true
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

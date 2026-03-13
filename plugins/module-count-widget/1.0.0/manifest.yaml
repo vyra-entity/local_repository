@@ -1,0 +1,101 @@
+# Plugin Manifest — module-count-widget v1.0.0
+# Reads the number of installed modules from v2_modulemanager and streams
+# the live count into a home-widget slot on the v2_dashboard.
+#
+# Scope topology:
+#   Backend  → scope MODULE / v2_modulemanager  (runs inside the manager process)
+#   Frontend → slot  home-widget / v2_dashboard (widget rendered on the dashboard)
+
+# ── Identity ──────────────────────────────────────────────────────────────────
+id: module-count-widget
+name: Module Count
+version: 1.0.0
+author: VYRA Framework
+description: >
+  Reads the installed-module count from v2_modulemanager and displays it as a
+  live-updating home-widget in v2_dashboard. Useful for validating that the
+  cross-scope plugin structure (backend in modulemanager, UI in dashboard) works
+  end-to-end.
+priority: 60
+status: development
+load_strategy: eager
+
+# ── Scope ─────────────────────────────────────────────────────────────────────
+# The plugin is installed at the v2_modulemanager level (backend scope).
+scope:
+  type: MODULE              # GLOBAL | TEMPLATE | MODULE | INSTANCE
+  target: v2_modulemanager
+
+# Modules this plugin runs in / is served by.
+compatible_with:
+  - v2_modulemanager
+  - v2_dashboard
+
+# ── Permissions ───────────────────────────────────────────────────────────────
+permissions:
+  # The plugin reads the module instance list – no write access needed.
+  interfaces: []
+  network: false
+  storage: none
+
+# ── Entry Points ──────────────────────────────────────────────────────────────
+entry_points:
+  backend:
+    type: wasm
+    file: plugins/module-count-widget/1.0.0/logic.wasm
+    handler: init
+    runtime_limits:
+      memory_mb: 4
+      cpu_shares: 0.01
+    exports:
+      - name: init
+        args:
+          - name: initial_count
+            type: i32
+      - name: set_count
+        args:
+          - name: count
+            type: i32
+      - name: get_count
+        args: []
+      - name: set_instances
+        args:
+          - name: n
+            type: i32
+      - name: get_instances
+        args: []
+
+  frontend:
+    type: module
+    file: plugins/module-count-widget/1.0.0/ui/index.js
+    css:
+      - plugins/module-count-widget/1.0.0/ui/style.css
+    slots:
+      # Renders as a home-widget card on the v2_dashboard start page.
+      - id: home-widget
+        component: ModuleCountWidget
+        title: Module Count
+        priority: 20
+        min_width: 1
+        min_height: 1
+        scope:
+          type: MODULE
+          target: v2_dashboard
+
+# ── Config Schema ─────────────────────────────────────────────────────────────
+config_schema: plugins/module-count-widget/1.0.0/schema.json
+
+# ── Documentation ─────────────────────────────────────────────────────────────
+docs:
+  wiki_path: plugins/module-count-widget/1.0.0/
+  search_keywords:
+    - modules
+    - count
+    - installed
+    - status
+    - widget
+    - demo
+
+# ── Integrity ─────────────────────────────────────────────────────────────────
+hash: module-count-widget-1.0.0
+checksum: ""

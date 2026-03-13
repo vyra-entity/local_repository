@@ -41,6 +41,22 @@
       "icon": "plugins/counter-widget/1.0.0/icon.svg",
       "metadata": "plugins/counter-widget/1.0.0/metadata.json",
       "synced_at": "2026-03-06T00:00:00Z"
+    },
+    {
+      "id": "module-count-widget",
+      "name": "Module Count",
+      "version": "1.0.0",
+      "description": "Liest die Anzahl installierter Module aus dem v2_modulemanager und stellt sie als live-aktualisiertes home-widget im v2_dashboard dar. Validiert die cross-scope Plugin-Architektur (Backend in modulemanager, UI in dashboard).",
+      "author": "VYRA Framework",
+      "scope": {
+        "type": "MODULE",
+        "target": "v2_modulemanager"
+      },
+      "compatible_with": ["v2_modulemanager", "v2_dashboard"],
+      "status": "development",
+      "icon": "plugins/module-count-widget/1.0.0/icon.svg",
+      "manifest": "plugins/module-count-widget/1.0.0/manifest.yaml",
+      "synced_at": "2026-03-13T00:00:00Z"
     }
   ]
 }
