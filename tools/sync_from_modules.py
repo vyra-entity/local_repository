@@ -10,7 +10,11 @@ Neue Struktur:
   index.json
 
 Verwendung:
+  # Alle Module synchronisieren
   python3 tools/sync_from_modules.py [PFAD_ZU_MODULES]
+
+  # Einzelnes Modul synchronisieren
+  python3 tools/sync_from_modules.py --module /path/to/v2_usermanager_<hash>
 """
 
 import argparse
@@ -99,7 +103,7 @@ def read_module_flags(module_dir: Path) -> dict:
             line = line.strip()
             if line == "ENABLE_FRONTEND_WEBSERVER=true":
                 flags["frontend_active"] = True
-            elif line == "ENABLE_BACKEND_API=true":
+            elif line in ("ENABLE_BACKEND_API=true", "ENABLE_BACKEND_WEBSERVER=true"):
                 flags["backend_active"] = True
     return flags
 
@@ -115,8 +119,122 @@ def get_uuid_suffix(name: str) -> str:
     return match.group(1) if match else ""
 
 
+def _sync_one_module(module_dir: Path, modules_dir: Path | None = None, ignore_filters: bool = False) -> dict | None:
+    """Process and sync one module directory into the repository.
+
+    Args:
+        module_dir: Absolute path to the module directory.
+        modules_dir: Parent modules directory used to look for pre-built archives.
+                     Falls back to module_dir.parent when not provided.
+        ignore_filters: When True, skips the modulemanager/template exclusion
+                        checks so any module path can be synced explicitly.
+
+    Returns:
+        The metadata dict that was written, or None when the module was skipped.
+    """
+    import shutil
+
+    if modules_dir is None:
+        modules_dir = module_dir.parent
+
+    dir_name = module_dir.name
+
+    if not ignore_filters:
+        if "modulemanager" in dir_name:
+            print(f"⏭️  Überspringe Modulemanager: {dir_name}")
+            return None
+
+    # Read metadata
+    data = read_module_data(module_dir)
+    if not data:
+        print(f"⚠️  Keine module_data.yaml gefunden: {dir_name}")
+        return None
+
+    name = data.get("name") or strip_uuid_suffix(dir_name)
+
+    if not ignore_filters and "template" in name:
+        print(f"⏭️  Überspringe Template-Modul: {name}")
+        return None
+
+    version = data.get("version", "0.0.0")
+    description = str(data.get("description") or "").replace("\n", " ").strip()
+    author = str(data.get("author") or "")
+    template = str(data.get("template") or "basic")
+    icon = str(data.get("icon") or "")
+    dependencies = data.get("dependencies") or []
+    version_hash = get_uuid_suffix(dir_name)
+    flags = read_module_flags(module_dir)
+
+    # Destination: modules/{name}/{version}/
+    version_dir = REPO_DIR / "modules" / name / version
+    version_dir.mkdir(parents=True, exist_ok=True)
+
+    archive_name = f"{name}_{version}.tar.gz"
+    archive_path = version_dir / archive_name
+    relative_filename = f"modules/{name}/{version}/{archive_name}"
+
+    # Check for a pre-built archive next to the module directory
+    prebuilt = modules_dir / archive_name
+    if prebuilt.exists():
+        print(f"📦 Gefunden (vorgebaut): {archive_name}")
+        if archive_path.exists() and archive_path.stat().st_size == prebuilt.stat().st_size:
+            print(f"   - ⏭️  Überspringe (identisch)")
+            return None
+        shutil.copy2(prebuilt, archive_path)
+    else:
+        print(f"📦 Packe: {dir_name}")
+        print(f"   - 📁 Quelle: {module_dir}")
+        if archive_path.exists():
+            mod_time = max(
+                (f.stat().st_mtime for f in module_dir.rglob("*") if f.is_file()),
+                default=0,
+            )
+            if archive_path.stat().st_mtime >= mod_time:
+                print(f"   - ⏭️  Überspringe (kein Update)")
+                return None
+            print(f"   - ♻️  Update (Modul hat sich geändert)")
+        pack_module(module_dir, archive_path)
+        print(f"   - ✅ Packen erfolgreich")
+
+    checksum = sha256_file(archive_path)
+    size = archive_path.stat().st_size
+    synced_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    metadata = {
+        "name": name,
+        "version": version,
+        "hash": version_hash,
+        "description": description,
+        "author": author,
+        "template": template,
+        "icon": icon,
+        "dependencies": dependencies,
+        "flags": flags,
+        "filename": relative_filename,
+        "synced_at": synced_at,
+        "size": size,
+        "checksum": checksum,
+    }
+
+    metadata_path = version_dir / "metadata.json"
+    with open(metadata_path, "w") as f:
+        json.dump(metadata, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+    print(f"   - ✅ Synchronisiert: {name} v{version}")
+    print()
+    return metadata
+
+
 def sync_modules(modules_dir: Path) -> list:
-    """Synchronisiert alle Module und gibt eine Liste der Metadaten zurück."""
+    """Sync all modules from modules_dir into the local repository.
+
+    Args:
+        modules_dir: Directory containing v2_* module folders.
+
+    Returns:
+        List of metadata dicts for modules that were synced.
+    """
     synced = []
     skipped = 0
 
@@ -128,110 +246,39 @@ def sync_modules(modules_dir: Path) -> list:
     for module_dir in sorted(modules_dir.glob("v2_*")):
         if not module_dir.is_dir():
             continue
-
-        dir_name = module_dir.name
-
-        # Modulemanager überspringen
-        if "modulemanager" in dir_name:
-            print(f"⏭️  Überspringe Modulemanager: {dir_name}")
-            continue
-
-        # Lese Metadaten
-        data = read_module_data(module_dir)
-        if not data:
-            print(f"⚠️  Keine module_data.yaml gefunden: {dir_name}")
-            continue
-
-        name = data.get("name") or strip_uuid_suffix(dir_name)
-
-        # Template-Module überspringen
-        if "template" in name:
-            print(f"⏭️  Überspringe Template-Modul: {name}")
-            continue
-
-        version = data.get("version", "0.0.0")
-        description = str(data.get("description") or "").replace("\n", " ").strip()
-        author = str(data.get("author") or "")
-        template = str(data.get("template") or "basic")
-        icon = str(data.get("icon") or "")
-        dependencies = data.get("dependencies") or []
-        version_hash = get_uuid_suffix(dir_name)
-        flags = read_module_flags(module_dir)
-
-        # Zielverzeichnis: modules/{name}/{version}/
-        version_dir = REPO_DIR / "modules" / name / version
-        version_dir.mkdir(parents=True, exist_ok=True)
-
-        archive_name = f"{name}_{version}.tar.gz"
-        archive_path = version_dir / archive_name
-        relative_filename = f"modules/{name}/{version}/{archive_name}"
-
-        # Prüfe ob Archiv bereits vorhanden ist (Quelle als vorgefertigte .tar.gz)
-        prebuilt = modules_dir / archive_name
-        if prebuilt.exists():
-            print(f"📦 Gefunden (vorgebaut): {archive_name}")
-            tar_source = prebuilt
-            use_copy = True
+        result = _sync_one_module(module_dir, modules_dir=modules_dir)
+        if result is None:
+            skipped += 1
         else:
-            print(f"📦 Packe: {dir_name}")
-            print(f"   - 📁 Quelle: {module_dir}")
-            tar_source = None
-            use_copy = False
-
-        if use_copy:
-            if archive_path.exists() and archive_path.stat().st_size == prebuilt.stat().st_size:
-                print(f"   - ⏭️  Überspringe (identisch)")
-                skipped += 1
-                continue
-            import shutil
-            shutil.copy2(prebuilt, archive_path)
-        else:
-            if archive_path.exists():
-                # Einfacher Zeitstempel-Vergleich als Änderungscheck
-                mod_time = max(
-                    (f.stat().st_mtime for f in module_dir.rglob("*") if f.is_file()),
-                    default=0
-                )
-                if archive_path.stat().st_mtime >= mod_time:
-                    print(f"   - ⏭️  Überspringe (kein Update)")
-                    skipped += 1
-                    continue
-                print(f"   - ♻️  Update (Modul hat sich geändert)")
-            pack_module(module_dir, archive_path)
-            print(f"   - ✅ Packen erfolgreich")
-
-        checksum = sha256_file(archive_path)
-        size = archive_path.stat().st_size
-        synced_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-        # Schreibe metadata.json in das Versionsverzeichnis
-        metadata = {
-            "name": name,
-            "version": version,
-            "hash": version_hash,
-            "description": description,
-            "author": author,
-            "template": template,
-            "icon": icon,
-            "dependencies": dependencies,
-            "flags": flags,
-            "filename": relative_filename,
-            "synced_at": synced_at,
-            "size": size,
-            "checksum": checksum,
-        }
-
-        metadata_path = version_dir / "metadata.json"
-        with open(metadata_path, "w") as f:
-            json.dump(metadata, f, indent=2, ensure_ascii=False)
-            f.write("\n")
-
-        print(f"   - ✅ Synchronisiert: {name} v{version}")
-        print()
-        synced.append(metadata)
+            synced.append(result)
 
     print(f"📊 Synchronisiert: {len(synced)} | Übersprungen: {skipped}")
     return synced
+
+
+def sync_single_module(module_path: Path) -> list:
+    """Sync a single module directory into the local repository.
+
+    Unlike sync_modules(), this function ignores the modulemanager/template
+    filters so any module path can be synced explicitly.
+
+    Args:
+        module_path: Absolute path to the module directory to sync.
+
+    Returns:
+        List with the synced module's metadata dict, or empty list if skipped.
+    """
+    print(f"\n🔄 Synchronisiere einzelnes Modul...")
+    print(f"   Quelle: {module_path}")
+    print(f"   Ziel:   {REPO_DIR}")
+    print()
+
+    result = _sync_one_module(module_path, ignore_filters=True)
+    if result is None:
+        print("📊 Synchronisiert: 0 | Übersprungen: 1")
+        return []
+    print("📊 Synchronisiert: 1 | Übersprungen: 0")
+    return [result]
 
 
 def collect_all_modules() -> list:
@@ -311,33 +358,51 @@ def main():
         default=None,
         help="Pfad zum modules-Verzeichnis (Standard: ../modules)",
     )
+    parser.add_argument(
+        "--module",
+        metavar="MODULE_PATH",
+        default=None,
+        help=(
+            "Pfad zu einem einzelnen Modul-Verzeichnis das synchronisiert werden soll. "
+            "Überspringt die modulemanager/template Filter, sodass jedes Modul "
+            "explizit synchronisiert werden kann."
+        ),
+    )
     args = parser.parse_args()
-
-    if args.modules_path:
-        modules_dir = Path(args.modules_path).resolve()
-    else:
-        modules_dir = (REPO_DIR.parent / "modules").resolve()
 
     print("=" * 60)
     print("🔄 Starte Modulsynchronisation ins lokale Repository")
     print("=" * 60)
 
-    if not modules_dir.exists():
-        print(f"❌ Modules-Verzeichnis nicht gefunden: {modules_dir}")
-        sys.exit(1)
-
     # Sicherstellen, dass Zielverzeichnisse existieren
     (REPO_DIR / "modules").mkdir(parents=True, exist_ok=True)
     (REPO_DIR / "plugins").mkdir(parents=True, exist_ok=True)
 
-    # Module synchronisieren
-    sync_modules(modules_dir)
+    if args.module:
+        # Single-module mode
+        module_path = Path(args.module).resolve()
+        if not module_path.exists() or not module_path.is_dir():
+            print(f"❌ Modul-Verzeichnis nicht gefunden: {module_path}")
+            sys.exit(1)
+        sync_single_module(module_path)
+    else:
+        # Bulk-sync mode
+        if args.modules_path:
+            modules_dir = Path(args.modules_path).resolve()
+        else:
+            modules_dir = (REPO_DIR.parent / "modules").resolve()
 
-    # Alle verfügbaren Metadaten einlesen (inkl. bereits vorhandene)
+        if not modules_dir.exists():
+            print(f"❌ Modules-Verzeichnis nicht gefunden: {modules_dir}")
+            sys.exit(1)
+
+        sync_modules(modules_dir)
+
+    # Re-collect all available metadata (including already-present entries)
     all_modules = collect_all_modules()
     all_plugins = collect_all_plugins()
 
-    # index.json aktualisieren
+    # Update index.json
     update_index(all_modules, all_plugins)
 
     print()
