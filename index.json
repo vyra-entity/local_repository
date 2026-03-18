@@ -4,8 +4,48 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-18T13:58:53Z",
+  "last_updated": "2026-03-18T15:20:17Z",
   "modules": [
+    {
+      "name": "testmodul",
+      "version": "0.1.0",
+      "hash": "",
+      "description": "Ein Testmodul für den VYRA Framework Workflow",
+      "author": "Vyra",
+      "template": "basic",
+      "icon": "",
+      "dependencies": [
+        {
+          "type": "base_image",
+          "name": "vyra_base_image",
+          "version": ">=1.0.0"
+        }
+      ],
+      "flags": {
+        "frontend_active": true,
+        "backend_active": true
+      },
+      "filename": "modules/testmodul/0.1.0/testmodul_0.1.0.tar.gz",
+      "images": {
+        "development": {
+          "filename": "modules/testmodul/0.1.0/images/testmodul_development.tar.gz",
+          "image_tag": "testmodul:development",
+          "base_image": "vyra_base_image:development",
+          "base_version": "1.0.0",
+          "archive_type": "delta"
+        },
+        "production": {
+          "filename": "modules/testmodul/0.1.0/images/testmodul_production.tar.gz",
+          "image_tag": "testmodul:production",
+          "base_image": "vyra_base_image:production",
+          "base_version": "1.0.0",
+          "archive_type": "delta"
+        }
+      },
+      "synced_at": "2026-03-18T15:18:42Z",
+      "size": 1994796,
+      "checksum": "25b90ca09700f153185d7f1cd44a400145c94c1afa81c9a30c6feee7e2d8debe"
+    },
     {
       "name": "v2_dashboard",
       "version": "0.1.0",
