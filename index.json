@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-18T15:20:17Z",
+  "last_updated": "2026-03-19T13:40:23Z",
   "modules": [
     {
       "name": "testmodul",

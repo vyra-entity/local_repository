@@ -70,6 +70,38 @@ python tools/pack_base_image.py redis:7
 
 ---
 
+### `update_index.sh`
+
+Scans the `modules/` and `plugins/` directories and rebuilds the `modules` and `plugins`
+arrays in `index.json`.
+
+- Reads `modules/<name>/<version>/metadata.json` for each module version.
+- Reads `plugins/<name>/<version>/manifest.yaml` for each plugin version.
+- Multiple versions of the same module or plugin are written as **separate entries** with the
+  same `id`/`name` but a different `version` value — the v2_modulemanager UI groups them and
+  renders a version-selector dropdown at install time.
+- Preserves static header fields (`name`, `description`, `type`, `base_url`); only
+  `last_updated`, `modules`, and `plugins` are overwritten.
+- Versions are sorted semantically (e.g. `1.0.0 → 1.0.2`) regardless of filesystem order.
+- `icon` and `config_schema` paths are included in plugin entries only when the corresponding
+  files exist on disk.
+
+**Usage:**
+
+```bash
+# Run from the local_repository root
+cd /path/to/local_repository
+bash tools/update_index.sh
+
+# Dry-run: print resulting JSON to stdout without modifying index.json
+bash tools/update_index.sh --dry-run
+```
+
+**Requirements:** `python3` with `pyyaml` (`pip install pyyaml`).  
+The script installs `pyyaml` automatically if it is not already available.
+
+---
+
 ## Repository layout
 
 ```
@@ -93,9 +125,10 @@ local_repository/
 ├── plugins/
 │   └── {name}/{version}/
 └── tools/
-    ├── README.md           ← this file
-    ├── sync_from_modules.py
-    └── pack_base_image.py
+    ├── README.md              ← this file
+    ├── sync_from_modules.py   ← sync module source + Docker images into the repo
+    ├── pack_base_image.py     ← export vyra_base_image variants as gzip archives
+    └── update_index.sh        ← rebuild index.json from metadata.json / manifest.yaml files
 ```
 
 ## Image archive formats
