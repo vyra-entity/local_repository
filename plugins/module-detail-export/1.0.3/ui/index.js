@@ -19,7 +19,51 @@
  * SheetJS is loaded lazily from CDN on first use to keep the bundle small.
  */
 
-const { defineComponent, ref, computed } = window.Vue;
+const { defineComponent, ref, computed, h } = window.Vue;
+
+// Inject component styles once into the document head
+let _stylesInjected = false;
+function injectStyles() {
+  if (_stylesInjected) return;
+  _stylesInjected = true;
+  const style = document.createElement('style');
+  style.textContent = `
+    .vyra-detail-export {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .vyra-detail-export__btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 55px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid var(--p-surface-border, #3d4a5c);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--p-text-color, #ced4da);
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .vyra-detail-export__btn:hover:not(:disabled) {
+      background: var(--p-surface-hover, #2a3547);
+      border-color: var(--p-primary-color, #6c9aff);
+      color: var(--p-primary-color, #6c9aff);
+    }
+    .vyra-detail-export__btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .vyra-detail-export__error {
+      color: var(--p-red-400, #f87171);
+      font-size: 13px;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 // CDN URL for SheetJS 0.20 (ESM build)
 const XLSX_CDN = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs';
@@ -60,17 +104,25 @@ function buildInfoRows(moduleData, instanceId) {
 
 /**
  * Build row objects for the "functions" tab.
+ * Each interface entry has: functionname, displayname, type, description,
+ * params (request IN) and returns (response OUT), each as [{name, datatype, displayname, description}].
  * @param {object} moduleData
  * @returns {object[]}
  */
 function buildFunctionsRows(moduleData) {
   const fns = moduleData.functions ?? [];
-  return fns.map(fn => ({
-    'Function Name': fn.name ?? fn.function_name ?? '',
-    Type:            fn.type ?? '',
-    Description:     fn.description ?? '',
-    Arguments:       JSON.stringify(fn.args ?? fn.arguments ?? []),
-  }));
+  return fns.map(fn => {
+    const formatFields = arr =>
+      (arr ?? []).map(f => `${f.name ?? f.displayname ?? ''}: ${f.datatype ?? ''}`).join(', ');
+    return {
+      'Function Name': fn.functionname ?? fn.function_name ?? fn.name ?? '',
+      'Display Name':  fn.displayname ?? '',
+      Type:            fn.type ?? '',
+      Description:     fn.description ?? '',
+      'Request IN':    formatFields(fn.params),
+      'Response OUT':  formatFields(fn.returns),
+    };
+  });
 }
 
 /**
@@ -168,12 +220,14 @@ function triggerDownload(data, filename) {
  * @param {object} XLSX - SheetJS namespace
  * @param {string} tab
  * @param {string} instanceId
+ * @param {string} moduleName
  * @param {object} moduleData
  */
-function generateXlsx(XLSX, tab, instanceId, moduleData) {
+function generateXlsx(XLSX, tab, instanceId, moduleName, moduleData) {
   const wb = XLSX.utils.book_new();
-  const safeName = (instanceId ?? 'module').replace(/[^a-z0-9_-]/gi, '_').slice(0, 20);
-  const filename = `${safeName}_${tab}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  const safeModule = (moduleName ?? 'module').replace(/[^a-z0-9_-]/gi, '_').slice(0, 24);
+  const shortId = (instanceId ?? '').slice(0, 4) || 'mod';
+  const filename = `${safeModule}_${shortId}_${tab}_${new Date().toISOString().slice(0, 10)}.xlsx`;
 
   if (tab === 'feeds') {
     const sheets = buildFeedsSheets(moduleData);
@@ -213,10 +267,15 @@ export default defineComponent({
       type: String,
       default: 'info',
     },
-    /** Module instance ID — used in the downloaded filename */
+    /** Module instance ID — first 4 chars used in the downloaded filename */
     instanceId: {
       type: String,
       default: '',
+    },
+    /** Module name — used as prefix in the downloaded filename */
+    moduleName: {
+      type: String,
+      default: 'module',
     },
     /** Tab-specific data snapshot provided by the host */
     moduleData: {
@@ -228,6 +287,8 @@ export default defineComponent({
   setup(props) {
     const loading = ref(false);
     const error   = ref(null);
+
+    injectStyles();
 
     const tabLabel = computed(() => {
       const labels = {
@@ -247,7 +308,7 @@ export default defineComponent({
       error.value   = null;
       try {
         const XLSX = await loadXlsx();
-        generateXlsx(XLSX, props.tab, props.instanceId, props.moduleData);
+        generateXlsx(XLSX, props.tab, props.instanceId, props.moduleName, props.moduleData);
       } catch (e) {
         console.error('[module-detail-export] download error:', e);
         error.value = 'Export failed';
@@ -259,54 +320,24 @@ export default defineComponent({
     return { loading, error, tabLabel, download };
   },
 
-  template: `
-    <span class="vyra-detail-export">
-      <button
-        class="vyra-detail-export__btn"
-        :disabled="loading"
-        :title="'Download ' + tabLabel + ' as xlsx'"
-        @click="download"
-      >
-        <span v-if="loading" class="vyra-detail-export__spinner">⏳</span>
-        <span v-else class="vyra-detail-export__icon">⬇</span>
-      </button>
-      <span v-if="error" class="vyra-detail-export__error" :title="error">⚠</span>
+  render() {
+    const nodes = [];
 
-      <style>
-        .vyra-detail-export {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-        }
-        .vyra-detail-export__btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 28px;
-          height: 28px;
-          padding: 0;
-          border: 1px solid var(--p-surface-border, #3d4a5c);
-          border-radius: 4px;
-          background: transparent;
-          color: var(--p-text-color, #ced4da);
-          cursor: pointer;
-          font-size: 14px;
-          transition: background 0.15s, border-color 0.15s;
-        }
-        .vyra-detail-export__btn:hover:not(:disabled) {
-          background: var(--p-surface-hover, #2a3547);
-          border-color: var(--p-primary-color, #6c9aff);
-          color: var(--p-primary-color, #6c9aff);
-        }
-        .vyra-detail-export__btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        .vyra-detail-export__error {
-          color: var(--p-red-400, #f87171);
-          font-size: 13px;
-        }
-      </style>
-    </span>
-  `,
+    nodes.push(h('button', {
+      class: 'vyra-detail-export__btn',
+      disabled: this.loading,
+      title: `Download ${this.tabLabel} as xlsx`,
+      onClick: this.download,
+    }, [
+      this.loading
+        ? h('span', { class: 'vyra-detail-export__spinner' }, '⏳')
+        : h('span', { class: 'vyra-detail-export__icon' }, '⬇(.xlsx)'),
+    ]));
+
+    if (this.error) {
+      nodes.push(h('span', { class: 'vyra-detail-export__error', title: this.error }, '⚠'));
+    }
+
+    return h('span', { class: 'vyra-detail-export' }, nodes);
+  },
 });

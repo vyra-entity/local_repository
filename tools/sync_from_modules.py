@@ -619,49 +619,49 @@ def sync_single_module(module_path: Path, store_full: bool = False) -> list:
     return [result]
 
 
-def collect_all_modules() -> list:
-    """Lese alle metadata.json aus modules/{name}/{version}/ Verzeichnissen."""
-    modules = []
-    modules_dir = REPO_DIR / "modules"
-    if not modules_dir.exists():
-        return modules
-    for name_dir in sorted(modules_dir.iterdir()):
-        if not name_dir.is_dir():
-            continue
-        for version_dir in sorted(name_dir.iterdir()):
-            if not version_dir.is_dir():
-                continue
-            meta_file = version_dir / "metadata.json"
-            if meta_file.exists():
-                with open(meta_file, "r") as f:
-                    modules.append(json.load(f))
-    return modules
+# def collect_all_modules() -> list:
+#     """Lese alle metadata.json aus modules/{name}/{version}/ Verzeichnissen."""
+#     modules = []
+#     modules_dir = REPO_DIR / "modules"
+#     if not modules_dir.exists():
+#         return modules
+#     for name_dir in sorted(modules_dir.iterdir()):
+#         if not name_dir.is_dir():
+#             continue
+#         for version_dir in sorted(name_dir.iterdir()):
+#             if not version_dir.is_dir():
+#                 continue
+#             meta_file = version_dir / "metadata.json"
+#             if meta_file.exists():
+#                 with open(meta_file, "r") as f:
+#                     modules.append(json.load(f))
+#     return modules
 
 
-def collect_all_plugins() -> list:
-    """
-    Lese alle plugins/{name}/{version}/metadata.json Verzeichnisse.
+# def collect_all_plugins() -> list:
+#     """
+#     Lese alle plugins/{name}/{version}/metadata.json Verzeichnisse.
 
-    Erwartet folgende Pflichtfelder (neue Schema-Version):
-      name, version, type, description, priority, status,
-      compatibility, load_strategy, permissions, entry_points,
-      dependencies, filename, hash, checksum
-    """
-    plugins = []
-    plugins_dir = REPO_DIR / "plugins"
-    if not plugins_dir.exists():
-        return plugins
-    for name_dir in sorted(plugins_dir.iterdir()):
-        if not name_dir.is_dir():
-            continue
-        for version_dir in sorted(name_dir.iterdir()):
-            if not version_dir.is_dir():
-                continue
-            meta_file = version_dir / "metadata.json"
-            if meta_file.exists():
-                with open(meta_file, "r") as f:
-                    plugins.append(json.load(f))
-    return plugins
+#     Erwartet folgende Pflichtfelder (neue Schema-Version):
+#       name, version, type, description, priority, status,
+#       compatibility, load_strategy, permissions, entry_points,
+#       dependencies, filename, hash, checksum
+#     """
+#     plugins = []
+#     plugins_dir = REPO_DIR / "plugins"
+#     if not plugins_dir.exists():
+#         return plugins
+#     for name_dir in sorted(plugins_dir.iterdir()):
+#         if not name_dir.is_dir():
+#             continue
+#         for version_dir in sorted(name_dir.iterdir()):
+#             if not version_dir.is_dir():
+#                 continue
+#             manifest_file = version_dir / "manifest.yaml"
+#             if manifest_file.exists():
+#                 with open(manifest_file, "r") as f:
+#                     plugins.append(json.load(f))
+#     return plugins
 
 
 def update_index(modules: list, plugins: list) -> None:
@@ -748,8 +748,12 @@ def main():
         sync_modules(modules_dir, store_full=args.store_full_image)
 
     # Re-collect all available metadata (including already-present entries)
-    all_modules = collect_all_modules()
-    all_plugins = collect_all_plugins()
+    if (SCRIPT_DIR / "update_index.sh").exists():
+        subprocess.run([SCRIPT_DIR / "update_index.sh"], check=True)
+    else:
+        print(f"⚠️  update_index.sh nicht gefunden, index.json wird mit Python aktualisiert")
+        # all_modules = collect_all_modules()
+        # all_plugins = collect_all_plugins()
 
     # Update index.json
     update_index(all_modules, all_plugins)

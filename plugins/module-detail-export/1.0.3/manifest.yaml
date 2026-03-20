@@ -5,7 +5,7 @@
 # ── Identity ──────────────────────────────────────────────────────────────────
 id: module-detail-export
 name: Module Detail Export
-version: 1.0.0
+version: 1.0.3
 author: VYRA Framework
 description: >
   Adds a download button (xlsx icon) to each tab in the v2_modulemanager
@@ -34,7 +34,7 @@ permissions:
 entry_points:
   frontend:
     type: module
-    file: plugins/module-detail-export/1.0.0/ui/index.js
+    file: plugins/module-detail-export/1.0.3/ui/index.js
     slots:
       - id: module.detail.actions
         component: ModuleDetailExport
@@ -46,11 +46,11 @@ entry_points:
 
 # ── Integrity ─────────────────────────────────────────────────────────────────
 checksum: ""
-hash: module-detail-export-1.0.0
+hash: module-detail-export-1.0.3-build-20260320-1139
 
 # ── Documentation ─────────────────────────────────────────────────────────────
 docs:
-  wiki_path: plugins/module-detail-export/1.0.0/
+  wiki_path: plugins/module-detail-export/1.0.3/
   search_keywords:
     - export
     - download

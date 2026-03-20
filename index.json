@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-19T13:40:23Z",
+  "last_updated": "2026-03-20T09:25:09Z",
   "modules": [
     {
       "name": "testmodul",
@@ -65,5 +65,92 @@
       "checksum": "2ba84282c5bca22258e95f0bceceb06ea16a0052501e8b58aa3c025d23e5eebc"
     }
   ],
-  "plugins": []
+  "plugins": [
+    {
+      "id": "counter-widget",
+      "name": "Counter Widget",
+      "version": "1.0.0",
+      "description": "Simple counter widget for the v2_dashboard home screen. Counts up on button click; logic runs inside the v2_modulemanager as a WASM module.",
+      "author": "VYRA Framework",
+      "status": "development",
+      "priority": 50,
+      "load_strategy": "eager",
+      "scope": {
+        "type": "MODULE",
+        "target": "v2_dashboard"
+      },
+      "compatible_with": [
+        "v2_dashboard"
+      ],
+      "manifest_path": "plugins/counter-widget/1.0.0/manifest.yaml",
+      "checksum": "",
+      "hash": "counter-widget-1.0.0",
+      "icon": "plugins/counter-widget/1.0.0/icon.svg",
+      "config_schema": "plugins/counter-widget/1.0.0/schema.json"
+    },
+    {
+      "id": "module-count-widget",
+      "name": "Module Count",
+      "version": "1.0.0",
+      "description": "Reads the installed-module count from v2_modulemanager and displays it as a live-updating home-widget in v2_dashboard. Useful for validating that the cross-scope plugin structure (backend in modulemanager, UI in dashboard) works end-to-end.",
+      "author": "VYRA Framework",
+      "status": "development",
+      "priority": 60,
+      "load_strategy": "eager",
+      "scope": {
+        "type": "MODULE",
+        "target": "v2_modulemanager"
+      },
+      "compatible_with": [
+        "v2_modulemanager",
+        "v2_dashboard"
+      ],
+      "manifest_path": "plugins/module-count-widget/1.0.0/manifest.yaml",
+      "checksum": "",
+      "hash": "module-count-widget-1.0.0",
+      "icon": "plugins/module-count-widget/1.0.0/icon.svg",
+      "config_schema": "plugins/module-count-widget/1.0.0/schema.json"
+    },
+    {
+      "id": "module-detail-export",
+      "name": "Module Detail Export",
+      "version": "1.0.3",
+      "description": "Adds a download button (xlsx icon) to each tab in the v2_modulemanager module details view (Info, Functions, Parameters, Volatile, Feeds, Logs). Clicking the button exports the currently displayed data as an xlsx file using SheetJS (loaded from CDN at runtime).",
+      "author": "VYRA Framework",
+      "status": "development",
+      "priority": 60,
+      "load_strategy": "eager",
+      "scope": {
+        "type": "MODULE",
+        "target": "v2_modulemanager"
+      },
+      "compatible_with": [
+        "v2_modulemanager"
+      ],
+      "manifest_path": "plugins/module-detail-export/1.0.0/manifest.yaml",
+      "checksum": "",
+      "hash": "module-detail-export-1.0.0"
+    },
+    {
+      "id": "zenoh-log-exporter",
+      "name": "Zenoh Log Streamer",
+      "version": "1.0.2",
+      "description": "Enables live log streaming via Zenoh on-demand. Provides a sidebar status icon and a full log panel in the app drawer.",
+      "author": "DevOps Tools Inc.",
+      "status": "stable",
+      "priority": 80,
+      "load_strategy": "lazy",
+      "scope": {
+        "type": "TEMPLATE",
+        "target": "welding_cell"
+      },
+      "compatible_with": [
+        "v2_dashboard",
+        "gateway_node"
+      ],
+      "manifest_path": "plugins/zenoh-log-exporter/1.0.2/manifest.yaml",
+      "checksum": "eebc2ba84282c5bca22258e95f0bceceb0",
+      "hash": "aef036f639d3486a985b65ee25df8fec"
+    }
+  ]
 }
