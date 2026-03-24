@@ -334,6 +334,7 @@ def _pack_module_images(
                 archive_type = "delta"
             except RuntimeError as exc:
                 print(f"   ⚠️  Delta export failed ({exc}); falling back to full export")
+                print(f"   ℹ️  Full export of '{image_tag}' may take several minutes for large images — please wait ...")
                 _export_full_image(image_tag, archive_path)
                 archive_type = "full"
 

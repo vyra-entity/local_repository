@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-23T07:34:42Z",
+  "last_updated": "2026-03-24T14:07:17Z",
   "modules": [
     {
       "name": "testmodul",
@@ -50,9 +50,11 @@
       "name": "testv3",
       "version": "0.0.1",
       "hash": "",
-      "description": "Test Version 3",
+      "description": "tv3",
       "author": "vyra",
-      "template": "test",
+      "template": [
+        "test"
+      ],
       "icon": "",
       "dependencies": [
         {
@@ -72,19 +74,19 @@
           "image_tag": "testv3:development",
           "base_image": "vyra_base_image:development",
           "base_version": "1.0.0",
-          "archive_type": "delta"
+          "archive_type": "full"
         },
         "production": {
           "filename": "modules/testv3/0.0.1/images/testv3_production.tar.gz",
           "image_tag": "testv3:production",
           "base_image": "vyra_base_image:production",
           "base_version": "1.0.0",
-          "archive_type": "delta"
+          "archive_type": "full"
         }
       },
-      "synced_at": "2026-03-23T07:33:11Z",
-      "size": 2051967,
-      "checksum": "faa14248c2b86898b58af375a262836473ee8fc2051270eb720629bb4eb15810"
+      "synced_at": "2026-03-24T13:54:24Z",
+      "size": 2051551,
+      "checksum": "928e113becd07dbaa7741fac6ce718a10d4f6cb5f597c2de6bfbaf0ecd74881b"
     },
     {
       "name": "v2_dashboard",
