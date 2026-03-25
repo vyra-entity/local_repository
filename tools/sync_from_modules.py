@@ -487,9 +487,11 @@ def _sync_one_module(
 
     # Check for a pre-built archive next to the module directory
     prebuilt = modules_dir / archive_name
+    metadata_path = version_dir / "metadata.json"
+
     if prebuilt.exists():
         print(f"📦 Gefunden (vorgebaut): {archive_name}")
-        if archive_path.exists() and archive_path.stat().st_size == prebuilt.stat().st_size:
+        if archive_path.exists() and archive_path.stat().st_size == prebuilt.stat().st_size and metadata_path.exists():
             print(f"   - ⏭️  Überspringe (identisch)")
             return None
         shutil.copy2(prebuilt, archive_path)
@@ -501,7 +503,7 @@ def _sync_one_module(
                 (f.stat().st_mtime for f in module_dir.rglob("*") if f.is_file()),
                 default=0,
             )
-            if archive_path.stat().st_mtime >= mod_time:
+            if archive_path.stat().st_mtime >= mod_time and metadata_path.exists():
                 print(f"   - ⏭️  Überspringe (kein Update)")
                 return None
             print(f"   - ♻️  Update (Modul hat sich geändert)")
@@ -512,6 +514,7 @@ def _sync_one_module(
     size = archive_path.stat().st_size
     synced_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    # metadata_path is already defined above (used for skip-check)
     # --- Pack Docker images --------------------------------------------------
     images_meta: dict = {}
     base_image_dep: dict | None = None
@@ -529,8 +532,8 @@ def _sync_one_module(
                 }
                 break
     except RuntimeError as exc:
-        print(f"   ❌ Image-Fehler: {exc}")
-        return None  # production image missing → cannot distribute
+        print(f"   ⚠️  Docker-Images nicht verfügbar (kein lokales Build): {exc}")
+        print(f"   ℹ️  metadata.json wird ohne Images geschrieben.")
     except Exception as exc:
         print(f"   ⚠️  Image-Warnung (nicht fatal): {exc}")
 
@@ -559,7 +562,6 @@ def _sync_one_module(
         "checksum": checksum,
     }
 
-    metadata_path = version_dir / "metadata.json"
     with open(metadata_path, "w") as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
         f.write("\n")

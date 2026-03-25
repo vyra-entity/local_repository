@@ -4,8 +4,29 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-24T14:07:17Z",
+  "last_updated": "2026-03-25T12:22:15Z",
   "modules": [
+    {
+      "name": "test_v3",
+      "version": "1.0.0",
+      "hash": "",
+      "description": "tv3",
+      "author": "vyra",
+      "template": [
+        "test"
+      ],
+      "icon": "",
+      "dependencies": [],
+      "flags": {
+        "frontend_active": true,
+        "backend_active": true
+      },
+      "filename": "modules/test_v3/1.0.0/test_v3_1.0.0.tar.gz",
+      "images": {},
+      "synced_at": "2026-03-25T12:22:15Z",
+      "size": 2044371,
+      "checksum": "18274d73211d494a814261e6da408a1f28d2dbf62c4bd096b79a4e96554d5c1e"
+    },
     {
       "name": "testmodul",
       "version": "0.1.0",
@@ -45,48 +66,6 @@
       "synced_at": "2026-03-18T15:18:42Z",
       "size": 1994796,
       "checksum": "25b90ca09700f153185d7f1cd44a400145c94c1afa81c9a30c6feee7e2d8debe"
-    },
-    {
-      "name": "testv3",
-      "version": "0.0.1",
-      "hash": "",
-      "description": "tv3",
-      "author": "vyra",
-      "template": [
-        "test"
-      ],
-      "icon": "",
-      "dependencies": [
-        {
-          "type": "base_image",
-          "name": "vyra_base_image",
-          "version": ">=1.0.0"
-        }
-      ],
-      "flags": {
-        "frontend_active": true,
-        "backend_active": true
-      },
-      "filename": "modules/testv3/0.0.1/testv3_0.0.1.tar.gz",
-      "images": {
-        "development": {
-          "filename": "modules/testv3/0.0.1/images/testv3_development.tar.gz",
-          "image_tag": "testv3:development",
-          "base_image": "vyra_base_image:development",
-          "base_version": "1.0.0",
-          "archive_type": "full"
-        },
-        "production": {
-          "filename": "modules/testv3/0.0.1/images/testv3_production.tar.gz",
-          "image_tag": "testv3:production",
-          "base_image": "vyra_base_image:production",
-          "base_version": "1.0.0",
-          "archive_type": "full"
-        }
-      },
-      "synced_at": "2026-03-24T13:54:24Z",
-      "size": 2051551,
-      "checksum": "928e113becd07dbaa7741fac6ce718a10d4f6cb5f597c2de6bfbaf0ecd74881b"
     },
     {
       "name": "v2_dashboard",
