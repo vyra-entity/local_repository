@@ -474,7 +474,12 @@ def _sync_one_module(
         template = ["basic"]
     icon = str(data.get("icon") or "")
     dependencies = data.get("dependencies") or []
-    version_hash = get_uuid_suffix(dir_name)
+    # Try to extract UUID from directory name; fall back to parent dir name
+    # (covers the new module-storages/<name>_<uuid>/<version>/ layout)
+    version_hash = get_uuid_suffix(dir_name) or get_uuid_suffix(module_dir.parent.name)
+    # Also try to read uuid from module_data.yaml as a last resort
+    if not version_hash:
+        version_hash = str(data.get("uuid") or "").replace("-", "").lower()[:32]
     flags = read_module_flags(module_dir)
 
     # Destination: modules/{name}/{version}/

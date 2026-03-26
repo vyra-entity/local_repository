@@ -4,29 +4,8 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-25T12:22:15Z",
+  "last_updated": "2026-03-26T15:54:39Z",
   "modules": [
-    {
-      "name": "test_v3",
-      "version": "1.0.0",
-      "hash": "",
-      "description": "tv3",
-      "author": "vyra",
-      "template": [
-        "test"
-      ],
-      "icon": "",
-      "dependencies": [],
-      "flags": {
-        "frontend_active": true,
-        "backend_active": true
-      },
-      "filename": "modules/test_v3/1.0.0/test_v3_1.0.0.tar.gz",
-      "images": {},
-      "synced_at": "2026-03-25T12:22:15Z",
-      "size": 2044371,
-      "checksum": "18274d73211d494a814261e6da408a1f28d2dbf62c4bd096b79a4e96554d5c1e"
-    },
     {
       "name": "testmodul",
       "version": "0.1.0",
@@ -66,6 +45,48 @@
       "synced_at": "2026-03-18T15:18:42Z",
       "size": 1994796,
       "checksum": "25b90ca09700f153185d7f1cd44a400145c94c1afa81c9a30c6feee7e2d8debe"
+    },
+    {
+      "name": "testv4",
+      "version": "1.0.0",
+      "hash": "d4741a7a31914da7b118f44bea3e3b71",
+      "description": "tv4",
+      "author": "vyra",
+      "template": [
+        "test"
+      ],
+      "icon": "",
+      "dependencies": [
+        {
+          "type": "base_image",
+          "name": "vyra_base_image",
+          "version": ">=1.0.0"
+        }
+      ],
+      "flags": {
+        "frontend_active": true,
+        "backend_active": true
+      },
+      "filename": "modules/testv4/1.0.0/testv4_1.0.0.tar.gz",
+      "images": {
+        "development": {
+          "filename": "modules/testv4/1.0.0/images/testv4_development.tar.gz",
+          "image_tag": "testv4:development",
+          "base_image": "vyra_base_image:development",
+          "base_version": "1.0.0",
+          "archive_type": "delta"
+        },
+        "production": {
+          "filename": "modules/testv4/1.0.0/images/testv4_production.tar.gz",
+          "image_tag": "testv4:production",
+          "base_image": "vyra_base_image:production",
+          "base_version": "1.0.0",
+          "archive_type": "delta"
+        }
+      },
+      "synced_at": "2026-03-26T15:53:06Z",
+      "size": 2050215,
+      "checksum": "f8f1310cb08df51a557d5047daf85e826351a5197335fc33d6d95aba67677843"
     },
     {
       "name": "v2_dashboard",
