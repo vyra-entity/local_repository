@@ -1,46 +1,12 @@
 {
-  "name": "local-repository",
+  "name": "local-module-repository",
   "description": "Lokales Vyra Module Repository für Offline-Entwicklung",
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-06T00:00:00Z",
+  "last_updated": "2026-03-27T12:59:10Z",
   "modules": [
-    {
-      "name": "v2_dashboard",
-      "version": "0.1.0",
-      "hash": "aef036f639d3486a985b65ee25df8fec",
-      "description": "This dashboard module provides an enhanced user interface for managing and monitoring various aspects of the VOS2 system. It offers real-time insights, customizable widgets, and seamless integration with other modules to enhance user experience and system administration.",
-      "author": "null",
-      "template": "basic",
-      "icon": "",
-      "dependencies": [],
-      "flags": {
-        "frontend_active": true,
-        "backend_active": false
-      },
-      "filename": "modules/v2_dashboard/0.1.0/v2_dashboard_0.1.0.tar.gz",
-      "synced_at": "2026-03-05T00:00:00Z",
-      "size": 19914881,
-      "checksum": "2ba84282c5bca22258e95f0bceceb06ea16a0052501e8b58aa3c025d23e5eebc"
-    }
   ],
   "plugins": [
-    {
-      "id": "counter-widget",
-      "name": "Counter Widget",
-      "version": "1.0.0",
-      "description": "Einfaches Zähler-Widget für den v2_dashboard Homescreen. Demo-Plugin für die Plugin-Architektur.",
-      "author": "VYRA Framework",
-      "scope": {
-        "type": "MODULE",
-        "target": "v2_dashboard"
-      },
-      "compatible_with": ["v2_dashboard"],
-      "status": "development",
-      "icon": "plugins/counter-widget/1.0.0/icon.svg",
-      "metadata": "plugins/counter-widget/1.0.0/metadata.json",
-      "synced_at": "2026-03-06T00:00:00Z"
-    }
   ]
 }
