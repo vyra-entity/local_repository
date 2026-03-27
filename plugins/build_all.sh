@@ -1,15 +1,31 @@
 #!/usr/bin/env bash
-# Build all local_repository plugins that have a src/ directory.
+# Build local_repository plugins that have a src/ directory.
 # Run from any directory — the script resolves paths relative to its own location.
+#
+# Usage:
+#   ./build_all.sh               # auto-discovers all plugins/<name>/<version>/src/
+#   PLUGINS=("counter-widget/1.0.0") ./build_all.sh  # build a specific subset
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-PLUGINS=(
-  "counter-widget/1.0.0"
-  "module-count-widget/1.0.0"
-  "module-detail-export/1.0.3"
-)
+# If PLUGINS is not set or empty, discover all <plugin>/<version> pairs that
+# contain a src/ directory.
+if [[ -z "${PLUGINS+x}" ]] || [[ ${#PLUGINS[@]} -eq 0 ]]; then
+  mapfile -t PLUGINS < <(
+    find "$SCRIPT_DIR" -mindepth 3 -maxdepth 3 -type d -name src \
+      | sed "s|$SCRIPT_DIR/||;s|/src$||" \
+      | sort
+  )
+fi
+
+if [[ ${#PLUGINS[@]} -eq 0 ]]; then
+  echo "⚠  No plugins found in $SCRIPT_DIR"
+  exit 0
+fi
+
+echo "Building ${#PLUGINS[@]} plugin(s):"
+for p in "${PLUGINS[@]}"; do echo "  • $p"; done
 
 FAILED=()
 

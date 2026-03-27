@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-26T15:54:39Z",
+  "last_updated": "2026-03-27T11:42:45Z",
   "modules": [
     {
       "name": "testmodul",
@@ -47,46 +47,25 @@
       "checksum": "25b90ca09700f153185d7f1cd44a400145c94c1afa81c9a30c6feee7e2d8debe"
     },
     {
-      "name": "testv4",
+      "name": "testv5",
       "version": "1.0.0",
-      "hash": "d4741a7a31914da7b118f44bea3e3b71",
-      "description": "tv4",
+      "hash": "b848ec3b295142f8b9cc079fa435568a",
+      "description": "tv5",
       "author": "vyra",
       "template": [
         "test"
       ],
       "icon": "",
-      "dependencies": [
-        {
-          "type": "base_image",
-          "name": "vyra_base_image",
-          "version": ">=1.0.0"
-        }
-      ],
+      "dependencies": [],
       "flags": {
         "frontend_active": true,
         "backend_active": true
       },
-      "filename": "modules/testv4/1.0.0/testv4_1.0.0.tar.gz",
-      "images": {
-        "development": {
-          "filename": "modules/testv4/1.0.0/images/testv4_development.tar.gz",
-          "image_tag": "testv4:development",
-          "base_image": "vyra_base_image:development",
-          "base_version": "1.0.0",
-          "archive_type": "delta"
-        },
-        "production": {
-          "filename": "modules/testv4/1.0.0/images/testv4_production.tar.gz",
-          "image_tag": "testv4:production",
-          "base_image": "vyra_base_image:production",
-          "base_version": "1.0.0",
-          "archive_type": "delta"
-        }
-      },
-      "synced_at": "2026-03-26T15:53:06Z",
-      "size": 2050215,
-      "checksum": "f8f1310cb08df51a557d5047daf85e826351a5197335fc33d6d95aba67677843"
+      "filename": "modules/testv5/1.0.0/testv5_1.0.0.tar.gz",
+      "images": {},
+      "synced_at": "2026-03-27T11:42:44Z",
+      "size": 2053895,
+      "checksum": "6fc07e709e5954a7fa9d2f5bdf2e1ecd2d54a9089bfb17f488185e1ad9c9227a"
     },
     {
       "name": "v2_dashboard",
@@ -172,6 +151,26 @@
       "manifest_path": "plugins/module-detail-export/1.0.3/manifest.yaml",
       "checksum": "",
       "hash": "module-detail-export-1.0.3-build-20260320-1139"
+    },
+    {
+      "id": "module-detail-export",
+      "name": "Module Detail Export",
+      "version": "1.1.0",
+      "description": "Adds a download button (xlsx icon) to each tab in the v2_modulemanager module details view (Info, Interfaces, Parameters, Volatile, Feeds, Logs). Clicking the button exports the currently displayed data as an xlsx file using SheetJS (loaded from CDN at runtime).  The Interfaces tab exports four sheets: All Interfaces, Services, Actions, Messages.",
+      "author": "VYRA Framework",
+      "status": "development",
+      "priority": 60,
+      "load_strategy": "eager",
+      "scope": {
+        "type": "MODULE",
+        "target": "v2_modulemanager"
+      },
+      "compatible_with": [
+        "v2_modulemanager"
+      ],
+      "manifest_path": "plugins/module-detail-export/1.1.0/manifest.yaml",
+      "checksum": "",
+      "hash": "module-detail-export-1.1.0-build-20260327-0001"
     },
     {
       "id": "zenoh-log-exporter",

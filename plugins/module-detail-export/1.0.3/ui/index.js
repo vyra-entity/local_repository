@@ -1,33 +1,33 @@
-/**
- * ModuleDetailExport — VYRA Plugin
- * Scope: v2_modulemanager / Slot: module.detail.actions
- *
- * Renders a small xlsx download button. The host (ModulesView.vue) passes
- * component props:
- *
- *   tab        {string}  — active tab key: 'info' | 'functions' | 'params' |
- *                          'volatile' | 'feeds' | 'logs'
- *   instanceId {string}  — module instance ID (used in filename)
- *   moduleData {object}  — tab-specific data snapshot:
- *     info:     { module_name, instance_id, version, author, ...detailState }
- *     functions:{ functions: Array }
- *     params:   { params: Object }
- *     volatile: { volatiles: Object }
- *     feeds:    { stateFeeds, errorFeeds, newsFeeds }
- *     logs:     { logLines: Array<{ts, level, message, logger}> }
- *
- * SheetJS is loaded lazily from CDN on first use to keep the bundle small.
- */
-
-const { defineComponent, ref, computed, h } = window.Vue;
-
-// Inject component styles once into the document head
-let _stylesInjected = false;
-function injectStyles() {
-  if (_stylesInjected) return;
-  _stylesInjected = true;
-  const style = document.createElement('style');
-  style.textContent = `
+import { defineComponent as C, ref as b, computed as I, onMounted as S, openBlock as m, createElementBlock as p, createElementVNode as V, createCommentVNode as E } from "vue";
+const T = { class: "vyra-detail-export" }, $ = ["disabled", "title"], U = {
+  key: 0,
+  class: "vyra-detail-export__spinner"
+}, L = {
+  key: 1,
+  class: "vyra-detail-export__icon"
+}, K = ["title"], M = "https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs", B = /* @__PURE__ */ C({
+  __name: "ModuleDetailExport",
+  props: {
+    tab: { default: "info" },
+    instanceId: { default: "" },
+    moduleName: { default: "module" },
+    moduleData: { default: () => ({}) }
+  },
+  setup(_) {
+    const s = _, i = b(!1), c = b(null), y = I(() => ({
+      info: "Info",
+      functions: "Functions",
+      params: "Parameters",
+      volatile: "Volatile",
+      feeds: "Feeds",
+      logs: "Logs"
+    })[s.tab] ?? s.tab);
+    let f = !1;
+    function x() {
+      if (f) return;
+      f = !0;
+      const t = document.createElement("style");
+      t.textContent = `
     .vyra-detail-export {
       display: inline-flex;
       align-items: center;
@@ -61,283 +61,148 @@ function injectStyles() {
       color: var(--p-red-400, #f87171);
       font-size: 13px;
     }
-  `;
-  document.head.appendChild(style);
-}
-
-// CDN URL for SheetJS 0.20 (ESM build)
-const XLSX_CDN = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs';
-
-let _xlsxPromise = null;
-
-/**
- * Lazily import SheetJS exactly once and cache the promise.
- * @returns {Promise<object>} SheetJS namespace
- */
-function loadXlsx() {
-  if (!_xlsxPromise) {
-    _xlsxPromise = import(/* webpackIgnore: true */ XLSX_CDN).catch(err => {
-      _xlsxPromise = null; // allow retry on next click
-      throw err;
-    });
-  }
-  return _xlsxPromise;
-}
-
-/**
- * Build a flat array of row objects for the "info" tab.
- * @param {object} moduleData
- * @param {string} instanceId
- * @returns {object[]}
- */
-function buildInfoRows(moduleData, instanceId) {
-  const info = moduleData.info ?? {};
-  const rows = [];
-  for (const [key, value] of Object.entries(info)) {
-    rows.push({ Key: key, Value: value == null ? '' : String(value) });
-  }
-  if (rows.length === 0 && instanceId) {
-    rows.push({ Key: 'instance_id', Value: instanceId });
-  }
-  return rows;
-}
-
-/**
- * Build row objects for the "functions" tab.
- * Each interface entry has: functionname, displayname, type, description,
- * params (request IN) and returns (response OUT), each as [{name, datatype, displayname, description}].
- * @param {object} moduleData
- * @returns {object[]}
- */
-function buildFunctionsRows(moduleData) {
-  const fns = moduleData.functions ?? [];
-  return fns.map(fn => {
-    const formatFields = arr =>
-      (arr ?? []).map(f => `${f.name ?? f.displayname ?? ''}: ${f.datatype ?? ''}`).join(', ');
-    return {
-      'Function Name': fn.functionname ?? fn.function_name ?? fn.name ?? '',
-      'Display Name':  fn.displayname ?? '',
-      Type:            fn.type ?? '',
-      Description:     fn.description ?? '',
-      'Request IN':    formatFields(fn.params),
-      'Response OUT':  formatFields(fn.returns),
-    };
-  });
-}
-
-/**
- * Build row objects for the "params" tab.
- * @param {object} moduleData
- * @returns {object[]}
- */
-function buildParamsRows(moduleData) {
-  const params = moduleData.params ?? {};
-  return Object.entries(params).map(([key, p]) => ({
-    Key:           key,
-    'Display Name':p?.display_name ?? p?.displayname ?? '',
-    Value:         p?.value == null ? '' : String(p.value),
-    'Default':     p?.default_value == null ? '' : String(p.default_value),
-    Type:          p?.type ?? '',
-    Description:   p?.description ?? '',
-  }));
-}
-
-/**
- * Build row objects for the "volatile" tab.
- * @param {object} moduleData
- * @returns {object[]}
- */
-function buildVolatileRows(moduleData) {
-  const vols = moduleData.volatiles ?? {};
-  return Object.entries(vols).map(([key, v]) => ({
-    Key:   key,
-    Value: v == null ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v),
-  }));
-}
-
-/**
- * Build sheets array [{name, rows}] for the "feeds" tab.
- * @param {object} moduleData
- * @returns {Array<{name: string, rows: object[]}>}
- */
-function buildFeedsSheets(moduleData) {
-  const sheets = [];
-
-  const mapFeedRows = feedArray => (feedArray ?? []).map(f => ({
-    Timestamp:   f.ts ?? f.timestamp ?? '',
-    State:       f.state ?? '',
-    Data:        f.data == null ? '' : typeof f.data === 'object'
-                   ? JSON.stringify(f.data)
-                   : String(f.data),
-    Description: f.description ?? '',
-  }));
-
-  sheets.push({ name: 'State Feeds',  rows: mapFeedRows(moduleData.stateFeeds)  });
-  sheets.push({ name: 'Error Feeds',  rows: mapFeedRows(moduleData.errorFeeds)  });
-  sheets.push({ name: 'News Feeds',   rows: mapFeedRows(moduleData.newsFeeds)   });
-  return sheets;
-}
-
-/**
- * Build row objects for the "logs" tab.
- * @param {object} moduleData
- * @returns {object[]}
- */
-function buildLogsRows(moduleData) {
-  const lines = moduleData.logLines ?? [];
-  return lines.map(l => ({
-    Timestamp: l.ts ?? '',
-    Level:     l.level ?? '',
-    Logger:    l.logger ?? '',
-    Message:   l.message ?? '',
-  }));
-}
-
-/**
- * Trigger browser download of a Blob as a file.
- * @param {Uint8Array|ArrayBuffer} data
- * @param {string} filename
- */
-function triggerDownload(data, filename) {
-  const blob = new Blob([data], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  });
-  const url = URL.createObjectURL(blob);
-  const a   = document.createElement('a');
-  a.href     = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
-}
-
-/**
- * Build workbook and trigger xlsx download for the given tab / data.
- *
- * @param {object} XLSX - SheetJS namespace
- * @param {string} tab
- * @param {string} instanceId
- * @param {string} moduleName
- * @param {object} moduleData
- */
-function generateXlsx(XLSX, tab, instanceId, moduleName, moduleData) {
-  const wb = XLSX.utils.book_new();
-  const safeModule = (moduleName ?? 'module').replace(/[^a-z0-9_-]/gi, '_').slice(0, 24);
-  const shortId = (instanceId ?? '').slice(0, 4) || 'mod';
-  const filename = `${safeModule}_${shortId}_${tab}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-
-  if (tab === 'feeds') {
-    const sheets = buildFeedsSheets(moduleData);
-    for (const { name, rows } of sheets) {
-      const ws = rows.length > 0
-        ? XLSX.utils.json_to_sheet(rows)
-        : XLSX.utils.aoa_to_sheet([['No data']]);
-      XLSX.utils.book_append_sheet(wb, ws, name);
+  `, document.head.appendChild(t);
     }
-  } else {
-    let rows;
-    switch (tab) {
-      case 'info':      rows = buildInfoRows(moduleData, instanceId); break;
-      case 'functions': rows = buildFunctionsRows(moduleData);        break;
-      case 'params':    rows = buildParamsRows(moduleData);           break;
-      case 'volatile':  rows = buildVolatileRows(moduleData);         break;
-      case 'logs':      rows = buildLogsRows(moduleData);             break;
-      default:          rows = [];
+    S(x);
+    let d = null;
+    function v() {
+      return d || (d = import(
+        /* @vite-ignore */
+        M
+      ).catch((t) => {
+        throw d = null, t;
+      })), d;
     }
-    const ws = rows.length > 0
-      ? XLSX.utils.json_to_sheet(rows)
-      : XLSX.utils.aoa_to_sheet([['No data']]);
-    const sheetName = tab.charAt(0).toUpperCase() + tab.slice(1);
-    XLSX.utils.book_append_sheet(wb, ws, sheetName);
-  }
-
-  const wbOut = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  triggerDownload(wbOut, filename);
-}
-
-export default defineComponent({
-  name: 'ModuleDetailExport',
-
-  props: {
-    /** Current detail tab: 'info' | 'functions' | 'params' | 'volatile' | 'feeds' | 'logs' */
-    tab: {
-      type: String,
-      default: 'info',
-    },
-    /** Module instance ID — first 4 chars used in the downloaded filename */
-    instanceId: {
-      type: String,
-      default: '',
-    },
-    /** Module name — used as prefix in the downloaded filename */
-    moduleName: {
-      type: String,
-      default: 'module',
-    },
-    /** Tab-specific data snapshot provided by the host */
-    moduleData: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-
-  setup(props) {
-    const loading = ref(false);
-    const error   = ref(null);
-
-    injectStyles();
-
-    const tabLabel = computed(() => {
-      const labels = {
-        info:      'Info',
-        functions: 'Functions',
-        params:    'Parameters',
-        volatile:  'Volatile',
-        feeds:     'Feeds',
-        logs:      'Logs',
-      };
-      return labels[props.tab] ?? props.tab;
-    });
-
-    async function download() {
-      if (loading.value) return;
-      loading.value = true;
-      error.value   = null;
-      try {
-        const XLSX = await loadXlsx();
-        generateXlsx(XLSX, props.tab, props.instanceId, props.moduleName, props.moduleData);
-      } catch (e) {
-        console.error('[module-detail-export] download error:', e);
-        error.value = 'Export failed';
-      } finally {
-        loading.value = false;
+    function h(t, o) {
+      const a = t.info ?? {}, e = [];
+      for (const [n, r] of Object.entries(a))
+        e.push({ Key: n, Value: r == null ? "" : String(r) });
+      return e.length === 0 && o && e.push({ Key: "instance_id", Value: o }), e;
+    }
+    function g(t) {
+      return (t.functions ?? []).map((a) => {
+        const e = (n) => (n ?? []).map((r) => `${r.name ?? r.displayname ?? ""}: ${r.datatype ?? ""}`).join(", ");
+        return {
+          "Function Name": a.functionname ?? a.function_name ?? a.name ?? "",
+          "Display Name": a.displayname ?? "",
+          Type: a.type ?? "",
+          Description: a.description ?? "",
+          "Request IN": e(a.params),
+          "Response OUT": e(a.returns)
+        };
+      });
+    }
+    function w(t) {
+      const o = t.params ?? {};
+      return Object.entries(o).map(([a, e]) => ({
+        Key: a,
+        "Display Name": (e == null ? void 0 : e.display_name) ?? (e == null ? void 0 : e.displayname) ?? "",
+        Value: (e == null ? void 0 : e.value) == null ? "" : String(e.value),
+        Default: (e == null ? void 0 : e.default_value) == null ? "" : String(e.default_value),
+        Type: (e == null ? void 0 : e.type) ?? "",
+        Description: (e == null ? void 0 : e.description) ?? ""
+      }));
+    }
+    function k(t) {
+      const o = t.volatiles ?? {};
+      return Object.entries(o).map(([a, e]) => ({
+        Key: a,
+        Value: e == null ? "" : typeof e == "object" ? JSON.stringify(e) : String(e)
+      }));
+    }
+    function D(t) {
+      const o = (a) => (a ?? []).map((e) => ({
+        Timestamp: e.ts ?? e.timestamp ?? "",
+        State: e.state ?? "",
+        Data: e.data == null ? "" : typeof e.data == "object" ? JSON.stringify(e.data) : String(e.data),
+        Description: e.description ?? ""
+      }));
+      return [
+        { name: "State Feeds", rows: o(t.stateFeeds) },
+        { name: "Error Feeds", rows: o(t.errorFeeds) },
+        { name: "News Feeds", rows: o(t.newsFeeds) }
+      ];
+    }
+    function j(t) {
+      return (t.logLines ?? []).map((a) => ({
+        Timestamp: a.ts ?? "",
+        Level: a.level ?? "",
+        Logger: a.logger ?? "",
+        Message: a.message ?? ""
+      }));
+    }
+    function N(t, o) {
+      const a = new Blob([t], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      }), e = URL.createObjectURL(a), n = document.createElement("a");
+      n.href = e, n.download = o, document.body.appendChild(n), n.click(), setTimeout(() => {
+        document.body.removeChild(n), URL.revokeObjectURL(e);
+      }, 100);
+    }
+    function F(t) {
+      const o = t.utils.book_new(), a = (s.moduleName ?? "module").replace(/[^a-z0-9_-]/gi, "_").slice(0, 24), e = (s.instanceId ?? "").slice(0, 4) || "mod", n = `${a}_${e}_${s.tab}_${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10)}.xlsx`;
+      if (s.tab === "feeds")
+        for (const { name: l, rows: u } of D(s.moduleData)) {
+          const O = u.length > 0 ? t.utils.json_to_sheet(u) : t.utils.aoa_to_sheet([["No data"]]);
+          t.utils.book_append_sheet(o, O, l);
+        }
+      else {
+        let l;
+        switch (s.tab) {
+          case "info":
+            l = h(s.moduleData, s.instanceId);
+            break;
+          case "functions":
+            l = g(s.moduleData);
+            break;
+          case "params":
+            l = w(s.moduleData);
+            break;
+          case "volatile":
+            l = k(s.moduleData);
+            break;
+          case "logs":
+            l = j(s.moduleData);
+            break;
+          default:
+            l = [];
+        }
+        const u = l.length > 0 ? t.utils.json_to_sheet(l) : t.utils.aoa_to_sheet([["No data"]]);
+        t.utils.book_append_sheet(o, u, s.tab.charAt(0).toUpperCase() + s.tab.slice(1));
+      }
+      const r = t.write(o, { bookType: "xlsx", type: "array" });
+      N(r, n);
+    }
+    async function R() {
+      if (!i.value) {
+        i.value = !0, c.value = null;
+        try {
+          const t = await v();
+          F(t);
+        } catch (t) {
+          console.error("[module-detail-export] download error:", t), c.value = "Export failed";
+        } finally {
+          i.value = !1;
+        }
       }
     }
-
-    return { loading, error, tabLabel, download };
-  },
-
-  render() {
-    const nodes = [];
-
-    nodes.push(h('button', {
-      class: 'vyra-detail-export__btn',
-      disabled: this.loading,
-      title: `Download ${this.tabLabel} as xlsx`,
-      onClick: this.download,
-    }, [
-      this.loading
-        ? h('span', { class: 'vyra-detail-export__spinner' }, '⏳')
-        : h('span', { class: 'vyra-detail-export__icon' }, '⬇(.xlsx)'),
+    return (t, o) => (m(), p("span", T, [
+      V("button", {
+        class: "vyra-detail-export__btn",
+        disabled: i.value,
+        title: `Download ${y.value} as xlsx`,
+        onClick: R
+      }, [
+        i.value ? (m(), p("span", U, "⏳")) : (m(), p("span", L, "⬇(.xlsx)"))
+      ], 8, $),
+      c.value ? (m(), p("span", {
+        key: 0,
+        class: "vyra-detail-export__error",
+        title: c.value
+      }, "⚠", 8, K)) : E("", !0)
     ]));
-
-    if (this.error) {
-      nodes.push(h('span', { class: 'vyra-detail-export__error', title: this.error }, '⚠'));
-    }
-
-    return h('span', { class: 'vyra-detail-export' }, nodes);
-  },
+  }
 });
+export {
+  B as default
+};
