@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "file-based",
   "base_url": "file:///local_repository",
-  "last_updated": "2026-03-27T11:42:45Z",
+  "last_updated": "2026-03-27T12:59:10Z",
   "modules": [
     {
       "name": "testmodul",
@@ -49,7 +49,7 @@
     {
       "name": "testv5",
       "version": "1.0.0",
-      "hash": "b848ec3b295142f8b9cc079fa435568a",
+      "hash": "c3a3b0e43feb49ba85b8c56df5f872fa",
       "description": "tv5",
       "author": "vyra",
       "template": [
@@ -63,9 +63,9 @@
       },
       "filename": "modules/testv5/1.0.0/testv5_1.0.0.tar.gz",
       "images": {},
-      "synced_at": "2026-03-27T11:42:44Z",
-      "size": 2053895,
-      "checksum": "6fc07e709e5954a7fa9d2f5bdf2e1ecd2d54a9089bfb17f488185e1ad9c9227a"
+      "synced_at": "2026-03-27T12:59:10Z",
+      "size": 2073460,
+      "checksum": "2b02cad9a0657ff62fdfbbd3f829950e95ec5216457e5b385a2e38f7139994f6"
     },
     {
       "name": "v2_dashboard",
