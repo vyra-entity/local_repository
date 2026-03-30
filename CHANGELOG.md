@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added — remove_module.sh and remove_plugin.sh (2026-03-30)
+
+- **`tools/remove_module.sh`**: New script to remove a module (all versions or a specific version) from the local repository and automatically rebuild `index.json`.
+- **`tools/remove_plugin.sh`**: New script to remove a plugin (all versions or a specific version) from the local repository and automatically rebuild `index.json`.
+
 ### Fixed — module-detail-export 1.1.0: bare "vue" specifier error (2026-03-27)
 
 - **`plugins/module-detail-export/1.1.0/src/vite.config.ts`**: Removed `external: ['vue']` and `globals: { vue: 'Vue' }` from `rollupOptions`. Vue is now bundled into `ui/index.js`, making the plugin fully self-contained. Fixes `TypeError: The specifier "vue" was a bare specifier, but was not remapped to anything` that occurred because `globals` has no effect for `format: 'es'` builds.
