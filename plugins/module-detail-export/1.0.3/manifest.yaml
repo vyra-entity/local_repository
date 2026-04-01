@@ -36,11 +36,12 @@ entry_points:
     type: module
     file: plugins/module-detail-export/1.0.3/ui/index.js
     slots:
-      - id: module.detail.actions
+      - scope:
+          - module.detail.actions
         component: ModuleDetailExport
         title: Module Detail Export
         priority: 10
-        scope:
+        slot_scope:
           type: MODULE
           target: v2_modulemanager
 

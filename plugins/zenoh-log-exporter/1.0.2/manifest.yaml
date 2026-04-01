@@ -50,11 +50,13 @@ entry_points:
     css:
       - plugins/zenoh-log-exporter/1.0.2/ui/style.css
     slots:
-      - id: sidebar-bottom           # Compact status icon in the sidebar
+      - scope:                       # Slot IDs this component is injected into
+          - sidebar-bottom           # Compact status icon in the sidebar
         component: LogStatusIcon
         title: Log Status
         priority: 10
-      - id: app_drawer_right         # Full log panel in the right app drawer
+      - scope:
+          - app_drawer_right         # Full log panel in the right app drawer
         component: LiveLogPanel
         title: Zenoh Live Logs
 

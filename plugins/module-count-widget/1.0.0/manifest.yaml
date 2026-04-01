@@ -72,13 +72,14 @@ entry_points:
       - plugins/module-count-widget/1.0.0/ui/style.css
     slots:
       # Renders as a home-widget card on the v2_dashboard start page.
-      - id: home-widget
+      - scope:
+          - home-widget
         component: ModuleCountWidget
         title: Module Count
         priority: 20
         min_width: 1
         min_height: 1
-        scope:
+        slot_scope:
           type: MODULE
           target: v2_dashboard
 

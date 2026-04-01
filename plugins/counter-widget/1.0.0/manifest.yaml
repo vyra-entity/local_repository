@@ -67,13 +67,14 @@ entry_points:
       - plugins/counter-widget/1.0.0/ui/style.css
     # Slots define where UI components are injected in the host module.
     slots:
-      - id: home-widget     # Slot identifier defined by the host module (v2_dashboard)
+      - scope:              # Slot IDs this component is injected into
+          - home-widget
         component: CounterWidget  # Vue component name exported by the JS entry point
         title: Counter Widget
         priority: 10        # Slot-level priority (higher = rendered first)
         min_width: 1        # Minimum grid columns (dashboard grid unit)
         min_height: 1       # Minimum grid rows
-        scope:              # Slot-level scope — restricts this slot to a specific target
+        slot_scope:         # Restricts this slot to a specific module/instance
           type: MODULE      # GLOBAL | TEMPLATE | MODULE | INSTANCE
           target: v2_dashboard
 
