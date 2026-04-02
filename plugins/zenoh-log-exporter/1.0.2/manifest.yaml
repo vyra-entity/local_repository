@@ -5,6 +5,7 @@
 # ── Identity ──────────────────────────────────────────────────────────────────
 id: zenoh-log-exporter      # Unique plugin identifier (kebab-case, no spaces)
 name: Zenoh Log Streamer    # Human-readable name shown in the UI
+short_description: Streams live Zenoh logs to a sidebar panel and app-drawer view.
 version: 1.0.2              # Semantic version (MAJOR.MINOR.PATCH)
 author: DevOps Tools Inc.   # Author or organisation name
 description: >

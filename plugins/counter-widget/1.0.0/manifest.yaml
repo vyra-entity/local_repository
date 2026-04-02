@@ -5,6 +5,7 @@
 # ── Identity ──────────────────────────────────────────────────────────────────
 id: counter-widget          # Unique plugin identifier (kebab-case, no spaces)
 name: Counter Widget        # Human-readable name shown in the UI
+short_description: Clickable counter widget for the dashboard home screen.
 version: 1.0.0              # Semantic version (MAJOR.MINOR.PATCH)
 author: VYRA Framework      # Author or organisation name
 description: >

@@ -5,6 +5,7 @@
 # ── Identity ──────────────────────────────────────────────────────────────────
 id: module-detail-export
 name: Module Detail Export
+short_description: Adds an xlsx export button to each tab in the module details dialog.
 version: 1.0.3
 author: VYRA Framework
 description: >

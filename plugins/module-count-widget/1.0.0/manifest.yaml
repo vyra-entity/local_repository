@@ -9,6 +9,7 @@
 # ── Identity ──────────────────────────────────────────────────────────────────
 id: module-count-widget
 name: Module Count
+short_description: Live dashboard widget showing the current number of installed modules.
 version: 1.0.0
 author: VYRA Framework
 description: >
