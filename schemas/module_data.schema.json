@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vyra.dev/schemas/module_data.schema.json",
+  "title": "VYRA Module Data",
+  "description": "Validates .module/module_data.yaml files in VYRA module directories.",
+  "type": "object",
+  "required": ["name", "version", "uuid"],
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^v2_[a-z0-9_]+$",
+      "description": "Module base name without UUID suffix (e.g. v2_dashboard)."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+",
+      "description": "Semantic version string (MAJOR.MINOR.PATCH)."
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{32}$",
+      "description": "32-character lowercase hex UUID that forms the module's unique directory suffix."
+    },
+    "author": {
+      "type": "string",
+      "description": "Author name or contact string."
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Author e-mail address."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the module's purpose."
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Optional friendly display name (used in UI if set)."
+    },
+    "alias": {
+      "type": "string",
+      "description": "Short alias used in CLI and routing contexts."
+    },
+    "template": {
+      "oneOf": [
+        {
+          "type": "string",
+          "description": "Single template tag."
+        },
+        {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of template tags."
+        }
+      ],
+      "description": "Template tags that categorise the module in the repository browser."
+    },
+    "icon": {
+      "type": "string",
+      "description": "Optional icon path or URL."
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "List of runtime dependencies required by this module.",
+      "items": {
+        "type": "object",
+        "required": ["type", "name"],
+        "additionalProperties": true,
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Dependency category (e.g. base_image, module, plugin)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Dependency name."
+          },
+          "version": {
+            "type": "string",
+            "description": "Version constraint (e.g. >=1.0.0)."
+          }
+        }
+      }
+    },
+    "flags": {
+      "type": "object",
+      "description": "Feature flags for this module.",
+      "additionalProperties": true,
+      "properties": {
+        "frontend_active": {
+          "type": "boolean",
+          "description": "Whether the module exposes a frontend web interface."
+        },
+        "backend_active": {
+          "type": "boolean",
+          "description": "Whether the module exposes a backend API."
+        }
+      }
+    },
+    "slim": {
+      "type": "boolean",
+      "description": "When true the module uses the slim (Zenoh-only) base image and has no ROS2 nodes."
+    }
+  }
+}

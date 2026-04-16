@@ -43,6 +43,8 @@ except ImportError:
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_DIR = SCRIPT_DIR.parent
+# Use data/ subdirectory when present (new layout), fall back to root-level dirs
+_DATA_DIR = REPO_DIR / "data" if (REPO_DIR / "data").exists() else REPO_DIR
 
 # Dateien/Verzeichnisse die beim Packen ausgeschlossen werden
 EXCLUDES = {
@@ -482,8 +484,8 @@ def _sync_one_module(
         version_hash = str(data.get("uuid") or "").replace("-", "").lower()[:32]
     flags = read_module_flags(module_dir)
 
-    # Destination: modules/{name}/{version}/
-    version_dir = REPO_DIR / "modules" / name / version
+    # Destination: data/modules/{name}/{version}/ (or legacy modules/)
+    version_dir = _DATA_DIR / "modules" / name / version
     version_dir.mkdir(parents=True, exist_ok=True)
 
     archive_name = f"{name}_{version}.tar.gz"
@@ -671,8 +673,8 @@ def main():
     print("=" * 60)
 
     # Sicherstellen, dass Zielverzeichnisse existieren
-    (REPO_DIR / "modules").mkdir(parents=True, exist_ok=True)
-    (REPO_DIR / "plugins").mkdir(parents=True, exist_ok=True)
+    (_DATA_DIR / "modules").mkdir(parents=True, exist_ok=True)
+    (_DATA_DIR / "plugins").mkdir(parents=True, exist_ok=True)
 
     if args.module:
         # Single-module mode

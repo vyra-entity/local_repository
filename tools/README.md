@@ -72,8 +72,9 @@ python tools/pack_base_image.py redis:7
 
 ### `update_index.sh`
 
-Scans the `modules/` and `plugins/` directories and rebuilds the `modules` and `plugins`
-arrays in `index.json`.
+Scans the `data/modules/` and `data/plugins/` directories and rebuilds the `modules` and `plugins`
+arrays in `data/index.json`. Falls back to root-level `modules/` and `plugins/` when no `data/`
+directory exists (legacy mode).
 
 - Reads `modules/<name>/<version>/metadata.json` for each module version.
 - Reads `plugins/<name>/<version>/manifest.yaml` for each plugin version.
@@ -128,8 +129,59 @@ local_repository/
     ├── README.md              ← this file
     ├── sync_from_modules.py   ← sync module source + Docker images into the repo
     ├── pack_base_image.py     ← export vyra_base_image variants as gzip archives
-    └── update_index.sh        ← rebuild index.json from metadata.json / manifest.yaml files
+    ├── update_index.sh        ← rebuild index.json from metadata.json / manifest.yaml files
+    ├── verify_modules.py      ← validate module packages against schema
+    └── verify_plugins.py      ← validate plugin manifests against schema
 ```
+
+---
+
+### `verify_modules.py`
+
+Validates all module packages in the repository against
+`schemas/module_data.schema.json`.
+
+Checks for each module version:
+- `metadata.json` exists and is valid JSON
+- `<name>_<version>.tar.gz` archive exists
+- Schema violations (with field paths)
+- Cross-check between directory names and metadata fields
+
+With `--check-source` it also validates `.module/module_data.yaml` files
+inside the actual module source directories in `VOS2_WORKSPACE/modules/`.
+
+**Usage:**
+
+```bash
+python tools/verify_modules.py
+python tools/verify_modules.py --check-source
+python tools/verify_modules.py --modules-dir /custom/path/modules
+```
+
+Exit code 0 = all pass, 1 = one or more failures.
+
+---
+
+### `verify_plugins.py`
+
+Validates all plugin manifests in the repository against
+`schemas/plugin_manifest.schema.json`.
+
+Checks for each plugin version:
+- `manifest.yaml` exists and is valid YAML
+- Required fields: `id`, `name`, `version`, `scope`
+- Schema violations
+- Presence of entry point files (`logic.wasm`, `ui/`)
+
+**Usage:**
+
+```bash
+python tools/verify_plugins.py
+python tools/verify_plugins.py --legacy        # also check plugins/ (legacy)
+python tools/verify_plugins.py --plugins-dir /path/to/plugins
+```
+
+---
 
 ## Image archive formats
 
@@ -143,3 +195,4 @@ can reconstruct a loadable image by merging with the locally available base imag
 
 A standard `docker save | gzip` export.  
 Can be loaded directly with `docker load`.
+

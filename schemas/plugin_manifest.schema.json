@@ -1,0 +1,358 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vyra.dev/schemas/plugin_manifest.schema.json",
+  "title": "VYRA Plugin Manifest",
+  "description": "Validates manifest.yaml files for VYRA plugins in local_repository/plugins/.",
+  "type": "object",
+  "required": ["id", "name", "version", "scope"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^(\\.?[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*){1,2}|[a-z][a-z0-9-]*)$",
+      "description": "Unique plugin identifier. Either legacy kebab-case (e.g. counter-widget) or namespace format <owner>.<domain>.<purpose> (e.g. pm.tools.export-panel). GLOBAL/framework plugins use a leading dot: .global.module.system-info. Owner abbreviations: pm=projectmanager, db=dashboard, um=usermanager, mm=modulemanager."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable display name shown in the UI."
+    },
+    "short_description": {
+      "type": "string",
+      "description": "One-line summary for list views."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+",
+      "description": "Semantic version string (MAJOR.MINOR.PATCH)."
+    },
+    "author": {
+      "type": "string",
+      "description": "Author or organisation name."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["device-control", "logic", "infrastructure", "analytics", "visualization", "other"],
+      "description": "Top-level category for plugin filtering in the Modulemanager UI."
+    },
+    "sub_category": {
+      "type": "string",
+      "description": "Free-text sub-category for finer filtering (e.g. monitoring, routing, auth)."
+    },
+    "tags": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Free-form tags for search and filtering."
+    },
+    "description": {
+      "type": "string",
+      "description": "Long description shown in the plugin detail view."
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50,
+      "description": "Global load priority (higher = loaded first)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["development", "beta", "stable", "deprecated"],
+      "description": "Lifecycle status of the plugin."
+    },
+    "load_strategy": {
+      "type": "string",
+      "enum": ["eager", "lazy"],
+      "description": "eager: load at startup | lazy: load on first access."
+    },
+    "scope": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "description": "Defines where the plugin is available.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["GLOBAL", "TEMPLATE", "MODULE", "INSTANCE"],
+          "description": "GLOBAL=everywhere | TEMPLATE=project templates | MODULE=all instances of a module | INSTANCE=single module instance."
+        },
+        "target": {
+          "type": "string",
+          "description": "Scope target identifier (ignored for GLOBAL)."
+        },
+        "owner_module": {
+          "type": "string",
+          "description": "Module that owns/maintains this plugin (e.g. dashboard, projectmanager). Used for attribution and filtering. Corresponds to the owner abbreviation in the namespace id."
+        }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Explicit dependencies so the Container Manager knows what must be running.",
+      "properties": {
+        "modules": {
+          "type": "array",
+          "description": "Required VYRA modules with optional minimum version.",
+          "items": {
+            "type": "object",
+            "required": ["id"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Module name_id (e.g. v2_dashboard, usermanager)."
+              },
+              "min_version": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+",
+                "description": "Minimum required semantic version."
+              }
+            }
+          }
+        },
+        "services": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Infrastructure services required at runtime (e.g. redis, zenoh, mqtt)."
+        }
+      }
+    },
+    "compatible_with": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of module name_ids this plugin is compatible with."
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Runtime permissions required by the plugin.",
+      "properties": {
+        "interfaces": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Allowed VYRA transport interface names."
+        },
+        "network": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the plugin may make outbound network calls."
+        },
+        "storage": {
+          "type": "string",
+          "enum": ["none", "read-only", "read-write"],
+          "default": "none",
+          "description": "Storage access level."
+        },
+        "zenoh_scopes": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Allowed Zenoh key-expression scopes (e.g. myproject/logs/**)."
+        }
+      }
+    },
+    "entry_points": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Plugin entry point definitions.",
+      "properties": {
+        "backend": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Backend (WASM or Python) entry point.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["wasm", "python"],
+              "description": "Backend runtime type."
+            },
+            "file": {
+              "type": "string",
+              "description": "Path to the backend file relative to the NFS pool root."
+            },
+            "handler": {
+              "type": "string",
+              "description": "WASM function or Python callable name invoked at startup."
+            },
+            "runtime_limits": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "memory_mb": {
+                  "type": "number",
+                  "minimum": 1,
+                  "description": "Maximum memory in MB the WASM sandbox may use."
+                },
+                "cpu_shares": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Fractional CPU share (0.05 = 5% of a core)."
+                }
+              }
+            },
+            "exports": {
+              "type": "array",
+              "description": "WASM functions exported by the module (drives WasmRuntime dispatch).",
+              "items": {
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Exported WASM function name."
+                  },
+                  "args": {
+                    "type": "array",
+                    "description": "Ordered list of WASM parameters.",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": {"type": "string"},
+                        "type": {
+                          "type": "string",
+                          "enum": ["i32", "i64", "f32", "f64"],
+                          "description": "WASM numeric type."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "frontend": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Frontend (Vue 3 SFC) entry point.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Frontend module type (usually 'module')."
+            },
+            "file": {
+              "type": "string",
+              "description": "Path to the ES module entry point relative to NFS pool root."
+            },
+            "css": {
+              "oneOf": [
+                {"type": "string"},
+                {"type": "array", "items": {"type": "string"}}
+              ],
+              "description": "Path(s) to CSS file(s)."
+            },
+            "slots": {
+              "type": "array",
+              "description": "UI slot registrations.",
+              "items": {
+                "type": "object",
+                "required": ["scope", "component"],
+                "additionalProperties": true,
+                "properties": {
+                  "scope": {
+                    "oneOf": [
+                      {"type": "string"},
+                      {"type": "array", "items": {"type": "string"}}
+                    ],
+                    "description": "Slot name(s) to register this component into (e.g. side-dock-popup.header). Replaces the legacy string 'id' field."
+                  },
+                  "id": {
+                    "type": "string",
+                    "description": "Legacy slot ID (deprecated — use scope instead)."
+                  },
+                  "component": {
+                    "type": "string",
+                    "description": "Vue 3 component name exported from the ES module."
+                  },
+                  "title": {"type": "string"},
+                  "priority": {"type": "integer"},
+                  "min_width": {"type": "integer"},
+                  "min_height": {"type": "integer"},
+                  "display_options": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Additional UI metadata for the Dashboard menu.",
+                    "properties": {
+                      "icon": {
+                        "type": "string",
+                        "description": "Icon identifier (e.g. info-circle, chart-bar). Matches the icon system used by the host module."
+                      },
+                      "permissions_required": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Permission keys required to see/activate this slot entry."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional runtime/deployment descriptor for plugins that need a sidecar container or backend process.",
+      "properties": {
+        "image_type": {
+          "type": "string",
+          "enum": ["SLIM", "FULL"],
+          "description": "SLIM = only ROS2 interfaces, no own ROS2 nodes | FULL = own ROS2 nodes, heavier footprint."
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Resource limits for Docker Swarm service placement.",
+          "properties": {
+            "cpu": {
+              "type": "string",
+              "description": "Fractional CPU limit as string (e.g. '0.1' = 10% of a core)."
+            },
+            "memory": {
+              "type": "string",
+              "description": "Memory limit as string with unit (e.g. '64M', '256M', '1G')."
+            }
+          }
+        }
+      }
+    },
+    "config_schema": {
+      "oneOf": [
+        {"type": "string", "description": "Path to schema.json relative to NFS pool root."},
+        {"type": "null"}
+      ],
+      "description": "JSON Schema file path for config_overlay validation, or null."
+    },
+    "hash": {
+      "type": "string",
+      "description": "Composite hash used for DB deduplication (set by build pipeline)."
+    },
+    "checksum": {
+      "type": "string",
+      "description": "SHA-256 of the packaged archive (set by build pipeline)."
+    },
+    "docs": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional documentation metadata.",
+      "properties": {
+        "wiki_path": {
+          "type": "string",
+          "description": "Path to documentation directory inside the plugin directory."
+        },
+        "search_keywords": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Keywords for search indexing."
+        }
+      }
+    }
+  }
+}

@@ -1,5 +1,16 @@
 
-modules/**
-plugins/**
+data/modules/**
+data/plugins/**
 
-index.json
+*/node_modules/**
+*/dist/**
+*/build/**
+*/coverage/**
+*/.cache/**
+*/.next/**
+*/.nuxt/**
+*/.vscode/**
+*/.idea/**
+*/.DS_Store
+
+data/index.json

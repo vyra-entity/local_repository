@@ -2,11 +2,12 @@
   "repositories": [
     {
       "name": "local-module-repository",
-      "url": "file:///local_repository",
+      "url": "file:///local_repository/data",
       "priority": 0,
       "enabled": true,
       "type": "file-based",
-      "description": "Lokales Repository für Offline-Entwicklung"
+      "description": "Lokales Repository f\u00fcr Offline-Entwicklung"
     }
-  ]
+  ],
+  "url": "file:///local_repository/data"
 }

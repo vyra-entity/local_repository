@@ -20,9 +20,16 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-INDEX_FILE="$REPO_ROOT/index.json"
-MODULES_DIR="$REPO_ROOT/modules"
-PLUGINS_DIR="$REPO_ROOT/plugins"
+# Prefer data/ subdirectory if it exists (new layout), fall back to root-level dirs for legacy
+if [[ -d "$REPO_ROOT/data" ]]; then
+  INDEX_FILE="$REPO_ROOT/data/index.json"
+  MODULES_DIR="$REPO_ROOT/data/modules"
+  PLUGINS_DIR="$REPO_ROOT/data/plugins"
+else
+  INDEX_FILE="$REPO_ROOT/index.json"
+  MODULES_DIR="$REPO_ROOT/modules"
+  PLUGINS_DIR="$REPO_ROOT/plugins"
+fi
 DRY_RUN=false
 
 for arg in "$@"; do
